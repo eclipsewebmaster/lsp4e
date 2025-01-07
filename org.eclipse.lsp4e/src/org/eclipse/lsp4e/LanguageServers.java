@@ -12,6 +12,16 @@
  *******************************************************************************/
 package org.eclipse.lsp4e;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.Assert;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
+import org.eclipse.lsp4e.internal.ArrayUtil;
+import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.services.LanguageServer;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,16 +36,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
-import org.eclipse.lsp4e.internal.ArrayUtil;
-import org.eclipse.lsp4j.ServerCapabilities;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.services.LanguageServer;
 
 /**
  * Main entry point for accessors to run requests on the language servers, and some utilities
@@ -409,6 +409,30 @@ public abstract class LanguageServers<E extends LanguageServers<E>> {
 		forwardCancellation(res, accumulator, another);
 		return res;
 	}
+
+	/**
+	 * Combines two async lists of results into a single list by adding all the elements of the second list to the first one,
+	 * ignoring abnormal results and only including succeses.
+	 *
+	 * @param <T> Result type
+	 * @param futures Async results
+	 * @return Async combined result
+	 */
+	public static <T> CompletableFuture<List<T>> addAllSuccessful(CompletableFuture<List<T>>... futures) {
+		CompletableFuture<List<T>> res = CompletableFuture.allOf(futures)
+				.thenApply( v -> {
+					List<T> results = new ArrayList<>(futures.length);
+					for(CompletableFuture<List<T>> f : futures) {
+						if (!f.isCompletedExceptionally()) {
+							results.addAll(f.join());
+						}
+					}
+					return results;
+				});
+		forwardCancellation(res, futures);
+		return res;
+	}
+
 
 	/**
 	 * Retrieves the initialized servers and apply the given query.
