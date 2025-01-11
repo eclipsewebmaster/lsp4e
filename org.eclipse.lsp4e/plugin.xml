@@ -234,18 +234,28 @@
             searchResultClass="org.eclipse.lsp4e.operations.references.LSSearchResult">
       </viewPage>
    </extension>
+
+   <extension point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.eclipse.lsp4e.ui.FoldingPreferencePage$PreferenceInitializer"/>
+   </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="org.eclipse.lsp4e.ui.LanguageServerPreferencePage"
             id="org.eclipse.lsp4e.preferences"
-            name="%languageservers.preference.page">
+            name="%languageservers.preferences.page">
       </page>
       <page
             category="org.eclipse.lsp4e.preferences"
             class="org.eclipse.lsp4e.ui.LoggingPreferencePage"
-            id="org.eclipse.lsp4e.logging.preferences"
-            name="%languageservers.logging.preference.page">
+            id="org.eclipse.lsp4e.preferences.logging"
+            name="%languageservers.preferences.logging.page">
+      </page>
+      <page
+            category="org.eclipse.lsp4e.preferences"
+            class="org.eclipse.lsp4e.ui.FoldingPreferencePage"
+            id="org.eclipse.lsp4e.preferences.folding"
+            name="%languageservers.preferences.folding.page">
       </page>
    </extension>
    <extension

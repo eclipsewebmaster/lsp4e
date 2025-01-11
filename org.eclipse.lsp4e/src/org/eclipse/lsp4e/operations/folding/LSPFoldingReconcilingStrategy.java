@@ -7,6 +7,7 @@
  *
  *  Contributors:
  *  Angelo Zerr <angelo.zerr@gmail.com> - Add support for 'textDocument/foldingRange' - Bug 537706
+ *  Sebastian Thomschke (Vegard IT GmbH) - Add comments/region default folding and folding prefs listener
  */
 package org.eclipse.lsp4e.operations.folding;
 
@@ -38,10 +39,13 @@ import org.eclipse.jface.text.source.projection.IProjectionListener;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServerPlugin;
 import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.lsp4e.internal.DocumentUtil;
+import org.eclipse.lsp4e.ui.FoldingPreferencePage;
 import org.eclipse.lsp4j.FoldingRange;
 import org.eclipse.lsp4j.FoldingRangeKind;
 import org.eclipse.lsp4j.FoldingRangeRequestParams;
@@ -52,9 +56,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 
 /**
- * LSP folding reconcilinig strategy which consumes the
- * `textDocument/foldingRange` command.
- *
+ * LSP folding reconcilinig strategy which consumes the `textDocument/foldingRange` command.
  */
 public class LSPFoldingReconcilingStrategy
 		implements IReconcilingStrategy, IReconcilingStrategyExtension, IProjectionListener, ITextViewerLifecycle {
@@ -66,12 +68,36 @@ public class LSPFoldingReconcilingStrategy
 	private @Nullable ProjectionViewer viewer;
 	private List<CompletableFuture<@Nullable List<FoldingRange>>> requests = List.of();
 	private volatile long timestamp = 0;
-	private final boolean collapseImports;
 
-	public LSPFoldingReconcilingStrategy() {
-		IPreferenceStore store = LanguageServerPlugin.getDefault().getPreferenceStore();
-		collapseImports = store.getBoolean("foldingReconcilingStrategy.collapseImports"); //$NON-NLS-1$
-	}
+	private final IPreferenceStore prefStore = LanguageServerPlugin.getDefault().getPreferenceStore();
+	private boolean isFoldingEnabled = prefStore.getBoolean(FoldingPreferencePage.PREF_FOLDING_ENABLED);
+	private boolean collapseComments = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_COMMENTS);
+	private boolean collapseFoldingRegions = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_REGIONS);
+	private boolean collapseImports = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_IMPORT_STATEMENTS);
+	private final IPropertyChangeListener foldingPrefsListener = (final PropertyChangeEvent event) -> {
+		final var newValue = event.getNewValue();
+		if (newValue != null) {
+			switch (event.getProperty()) {
+			case FoldingPreferencePage.PREF_FOLDING_ENABLED:
+				isFoldingEnabled = Boolean.parseBoolean(newValue.toString());
+				if(isFoldingEnabled) {
+					reconcile(null); // requests folding markers from LS
+				} else {
+					applyFolding(null); // removes all existing folding markers
+				}
+				break;
+			case FoldingPreferencePage.PREF_AUTOFOLD_COMMENTS:
+				collapseComments = Boolean.parseBoolean(newValue.toString());
+				break;
+			case FoldingPreferencePage.PREF_AUTOFOLD_REGIONS:
+				collapseFoldingRegions = Boolean.parseBoolean(newValue.toString());
+				break;
+			case FoldingPreferencePage.PREF_AUTOFOLD_IMPORT_STATEMENTS:
+				collapseImports = Boolean.parseBoolean(newValue.toString());
+				break;
+			}
+		}
+	};
 
 	/**
 	 * A FoldingAnnotation is a {@link ProjectionAnnotation} it is folding and
@@ -132,7 +158,7 @@ public class LSPFoldingReconcilingStrategy
 	@Override
 	public void reconcile(@Nullable IRegion subRegion) {
 		final var document = this.document;
-		if (projectionAnnotationModel == null || document == null) {
+		if (!isFoldingEnabled || projectionAnnotationModel == null || document == null) {
 			return;
 		}
 
@@ -165,9 +191,15 @@ public class LSPFoldingReconcilingStrategy
 					.sorted(Comparator.comparing(FoldingRange::getEndLine)) //
 					.forEach(foldingRange -> {
 						try {
+							final var collapsByDefault = foldingRange.getKind() != null
+									&& switch (foldingRange.getKind()) {
+									case FoldingRangeKind.Comment -> collapseComments;
+									case FoldingRangeKind.Imports -> collapseImports;
+									case FoldingRangeKind.Region -> collapseFoldingRegions;
+									default -> false;
+									};
 							updateAnnotation(deletions, existing, additions, foldingRange.getStartLine(),
-									foldingRange.getEndLine(),
-									collapseImports && FoldingRangeKind.Imports.equals(foldingRange.getKind()));
+									foldingRange.getEndLine(), collapsByDefault);
 						} catch (BadLocationException e) {
 							// should never occur
 						}
@@ -196,6 +228,7 @@ public class LSPFoldingReconcilingStrategy
 			this.viewer = projViewer;
 			projViewer.addProjectionListener(this);
 			this.projectionAnnotationModel = projViewer.getProjectionAnnotationModel();
+			prefStore.addPropertyChangeListener(foldingPrefsListener);
 		}
 	}
 
@@ -205,6 +238,7 @@ public class LSPFoldingReconcilingStrategy
 		if (viewer != null) {
 			viewer.removeProjectionListener(this);
 			viewer = null;
+			prefStore.removePropertyChangeListener(foldingPrefsListener);
 		}
 		projectionDisabled();
 	}

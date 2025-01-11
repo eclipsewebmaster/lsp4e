@@ -34,6 +34,9 @@ import org.eclipse.lsp4j.DocumentSymbolCapabilities;
 import org.eclipse.lsp4j.ExecuteCommandCapabilities;
 import org.eclipse.lsp4j.FailureHandlingKind;
 import org.eclipse.lsp4j.FoldingRangeCapabilities;
+import org.eclipse.lsp4j.FoldingRangeKind;
+import org.eclipse.lsp4j.FoldingRangeKindSupportCapabilities;
+import org.eclipse.lsp4j.FoldingRangeSupportCapabilities;
 import org.eclipse.lsp4j.FormattingCapabilities;
 import org.eclipse.lsp4j.HoverCapabilities;
 import org.eclipse.lsp4j.InlayHintCapabilities;
@@ -111,7 +114,15 @@ public class SupportedFeatures {
 		documentSymbol.setHierarchicalDocumentSymbolSupport(true);
 		documentSymbol.setSymbolKind(new SymbolKindCapabilities(List.of(SymbolKind.values())));
 		textDocumentClientCapabilities.setDocumentSymbol(documentSymbol);
-		textDocumentClientCapabilities.setFoldingRange(new FoldingRangeCapabilities());
+		final var foldingRangeCapabilities = new FoldingRangeCapabilities();
+		foldingRangeCapabilities.setLineFoldingOnly(true);
+		foldingRangeCapabilities.setFoldingRange(new FoldingRangeSupportCapabilities(false));
+		foldingRangeCapabilities.setFoldingRangeKind(new FoldingRangeKindSupportCapabilities(List.of( //
+				FoldingRangeKind.Comment,
+				FoldingRangeKind.Imports,
+				FoldingRangeKind.Region
+				)));
+		textDocumentClientCapabilities.setFoldingRange(foldingRangeCapabilities);
 		textDocumentClientCapabilities.setFormatting(new FormattingCapabilities(true));
 		final var hoverCapabilities = new HoverCapabilities();
 		hoverCapabilities.setContentFormat(List.of( //
