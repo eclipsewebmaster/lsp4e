@@ -1,137 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="languageServer" name="Language Server" schema="schema/languageServer.exsd"/>
+   <extension-point id="languageServer" name="Language Server" schema="schema/languageServer.exsd" />
+
+   <!-- ===================================== -->
+   <!-- Setup Text Doc To LS Connection       -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
+            contentTypeId="org.eclipse.core.runtime.text" />
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Key Bindings                          -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.bindings">
+      <!-- goto symbols -->
+      <key sequence="M1+O"
+            commandId="org.eclipse.lsp4e.symbolInFile"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+      <key sequence="M1+M2+T"
+            commandId="org.eclipse.lsp4e.symbolInWorkspace"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+
+      <!-- formatting -->
+      <key sequence="M1+M2+F"
+            commandId="org.eclipse.lsp4e.format"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+
+      <!-- refactoring -->
+      <key sequence="M2+M3+R"
+            commandId="org.eclipse.ui.edit.rename"
+            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+
+      <!-- edit -->
+      <key sequence="M2+M3+ARROW_UP"
+            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
+            commandId="org.eclipse.lsp4e.selectionRange.up"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+      <key sequence="M2+M3+ARROW_DOWN"
+            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
+            commandId="org.eclipse.lsp4e.selectionRange.down"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+
+      <key sequence="M1+T"
+            commandId="org.eclipse.lsp4e.typeHierarchy"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+      <key sequence="F4"
+            commandId="org.eclipse.lsp4e.openTypeHierarchy"
+            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+      <key sequence="Ctrl+Alt+H"
+            commandId="org.eclipse.lsp4e.openCallHierarchy"
+            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Resource Markers                      -->
+   <!-- ===================================== -->
    <!-- Extension point will ideally be "org.eclipse.text...." because
    the feature should be part of the generic text editor -->
-   <extension
+   <extension point="org.eclipse.core.resources.markers"
          id="diagnostic"
-         name="%markers.name"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
+         name="%markers.name">
+      <super type="org.eclipse.core.resources.problemmarker" />
    </extension>
-   <extension
-         point="org.eclipse.ui.ide.markerResolution">
+
+   <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
             class="org.eclipse.lsp4e.operations.codeactions.LSPCodeActionMarkerResolution"
-            markerType="org.eclipse.lsp4e.diagnostic">
-      </markerResolutionGenerator>
+            markerType="org.eclipse.lsp4e.diagnostic" />
    </extension>
-   <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-      <hyperlinkDetector
-            activate="true"
-            class="org.eclipse.lsp4e.operations.declaration.OpenDeclarationHyperlinkDetector"
-            description="%openDeclarationHyperlink_description"
-            id="org.eclipse.lsp4e.hyperlinkDetector"
-            name="%openDeclarationHyperlink_name"
-            targetId="org.eclipse.ui.DefaultTextEditor">
-      </hyperlinkDetector>
-      <hyperlinkDetector
-            activate="true"
-            class="org.eclipse.lsp4e.operations.documentLink.DocumentLinkDetector"
-            description="Document Link Detector"
-            id="org.eclipse.lsp4e.documentLinkDetector"
-            name="Document Link Detector"
-            targetId="org.eclipse.ui.DefaultTextEditor">
-      </hyperlinkDetector>
+
+
+   <!-- ===================================== -->
+   <!-- LSP4E Categories                      -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.views">
+      <category
+            id="org.eclipse.lsp4e.views"
+            name="%viewsCategory.name" />
    </extension>
-   <extension
-         point="org.eclipse.ui.commands">
+   <extension point="org.eclipse.ui.commands">
       <category
             id="org.eclipse.lsp4e.category"
-            name="%commands.category.name">
-      </category>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.format"
-            name="%format.command.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.formatfile"
-            name="%format.command.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.symbolInFile"
-            name="%commands.symbolsInFile.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.symbolInWorkspace"
-            name="%commands.symbolsInWorkspace.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.toggleLinkWithEditor"
-            name="Toggle Link with Editor">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState:true"
-               id="org.eclipse.ui.commands.toggleState">
-         </state>
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.showkindinoutline"
-            name="Show Kind in Outline">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState:true"
-               id="org.eclipse.ui.commands.toggleState">
-         </state>
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.toggleSortOutline"
-            name="%command.toggle.outline.sort.name">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState:false"
-               id="org.eclipse.ui.commands.toggleState" />
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.toggleHideFieldsOutline"
-            name="%command.toggle.outline.hideFields.name">
-         <state
-               class="org.eclipse.ui.handlers.RegistryToggleState:false"
-               id="org.eclipse.ui.commands.toggleState">
-         </state>
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            description="%command.open.call.hierarchy.description"
-            id="org.eclipse.lsp4e.openCallHierarchy"
-            name="%command.open.call.hierarchy.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            description="%command.selection.range.up.description"
-            id="org.eclipse.lsp4e.selectionRange.up"
-            name="%command.selection.range.up.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            description="%command.selection.range.down.description"
-            id="org.eclipse.lsp4e.selectionRange.down"
-            name="%command.selection.range.down.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            description="%command.open.quick.type.hierarchy.description"
-            id="org.eclipse.lsp4e.typeHierarchy"
-            name="%command.open.quick.type.hierarchy.name">
-      </command>
-      <command
-            categoryId="org.eclipse.lsp4e.category"
-            description="%command.open.type.hierarchy.description"
-            id="org.eclipse.lsp4e.openTypeHierarchy"
-            name="%command.open.type.hierarchy.name">
-      </command>
+            name="%commands.category.name" />
    </extension>
-   <extension
-         point="org.eclipse.ui.handlers">
+
+
+   <!-- ===================================== -->
+   <!-- Dark Theme                            -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.e4.ui.css.swt.theme">
+      <stylesheet uri="resources/css/dark.css">
+         <themeid refid="org.eclipse.e4.ui.css.theme.e4_dark" />
+      </stylesheet>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Preferences                           -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.lsp4e.ui.LanguageServerPreferencePage"
+            id="org.eclipse.lsp4e.preferences"
+            name="%languageservers.preferences.page" />
+      <page
+            category="org.eclipse.lsp4e.preferences"
+            class="org.eclipse.lsp4e.ui.LoggingPreferencePage"
+            id="org.eclipse.lsp4e.preferences.logging"
+            name="%languageservers.preferences.logging.page" />
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Folding Support                       -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.eclipse.lsp4e.preferences"
+            class="org.eclipse.lsp4e.ui.FoldingPreferencePage"
+            id="org.eclipse.lsp4e.preferences.folding"
+            name="%languageservers.preferences.folding.page" />
+   </extension>
+
+   <extension point="org.eclipse.core.runtime.preferences">
+      <initializer class="org.eclipse.lsp4e.ui.FoldingPreferencePage$PreferenceInitializer"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.genericeditor.foldingReconcilers">
+      <foldingReconcilingStrategy
+            class="org.eclipse.lsp4e.operations.folding.LSPFoldingReconcilingStrategy"
+            contentType="org.eclipse.core.runtime.text">
+         <enabledWhen>
+            <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
+         </enabledWhen>
+      </foldingReconcilingStrategy>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Find References Support               -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.search.searchResultViewPages">
+      <viewPage
+            class="org.eclipse.lsp4e.operations.references.LSSearchResultPage"
+            id="org.eclipse.lsp4e.lsResultPage"
+            searchResultClass="org.eclipse.lsp4e.operations.references.LSSearchResult" />
+   </extension>
+
+   <!-- find references: register command handlers -->
+   <extension point="org.eclipse.ui.handlers">
       <handler
             class="org.eclipse.lsp4e.operations.references.LSFindReferences"
             commandId="org.eclipse.ui.genericeditor.findReferences">
@@ -139,13 +168,54 @@
             <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
          </activeWhen>
       </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.rename.LSPRenameHandler"
-            commandId="org.eclipse.ui.edit.rename">
-         <activeWhen>
-            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
-         </activeWhen>
-      </handler>
+   </extension>
+
+   <!-- find references: register menu entries -->
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
+         <command commandId="org.eclipse.lsp4e.openCallHierarchy">
+            <visibleWhen checkEnabled="false">
+               <and>
+                  <with variable="selection">
+                      <instanceof value="org.eclipse.jface.text.ITextSelection" />
+                  </with>
+                  <with variable="activeEditorInput">
+                      <test property="org.eclipse.lsp4e.hasLanguageServer" />
+                  </with>
+               </and>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
+         <command commandId="org.eclipse.lsp4e.typeHierarchy">
+            <visibleWhen checkEnabled="true" />
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
+         <command commandId="org.eclipse.lsp4e.openTypeHierarchy">
+            <visibleWhen checkEnabled="true" />
+         </command>
+      </menuContribution>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Format Source Code Support            -->
+   <!-- ===================================== -->
+   <!-- format: define commands -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.format"
+            name="%format.command.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.formatfile"
+            name="%format.command.name" />
+   </extension>
+
+   <!-- format: register command handlers -->
+   <extension point="org.eclipse.ui.handlers">
       <handler
             class="org.eclipse.lsp4e.operations.format.LSPFormatHandler"
             commandId="org.eclipse.lsp4e.format">
@@ -157,177 +227,10 @@
             class="org.eclipse.lsp4e.operations.format.LSPFormatFilesHandler"
             commandId="org.eclipse.lsp4e.formatfile">
       </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInFileHandler"
-            commandId="org.eclipse.lsp4e.symbolInFile">
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInWorkspaceHandler"
-            commandId="org.eclipse.lsp4e.symbolInWorkspace">
-         <activeWhen>
-            <reference
-                  definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer">
-            </reference>
-         </activeWhen>
-      </handler>
-      <handler
-            commandId="org.eclipse.lsp4e.toggleLinkWithEditor">
-         <class
-               class="org.eclipse.lsp4e.outline.ToggleLinkingHandler">
-         </class>
-      </handler>
-      <handler
-            commandId="org.eclipse.lsp4e.showkindinoutline">
-         <class
-               class="org.eclipse.lsp4e.outline.ShowKindHandler">
-         </class>
-      </handler>
-      <handler commandId="org.eclipse.lsp4e.toggleSortOutline">
-         <class class="org.eclipse.lsp4e.outline.ToggleSortOutlineHandler" />
-      </handler>
-      <handler
-            commandId="org.eclipse.lsp4e.toggleHideFieldsOutline">
-         <class
-               class="org.eclipse.lsp4e.outline.ToggleHideFieldsOutlineHandler">
-         </class>
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.callhierarchy.CallHierarchyCommandHandler"
-            commandId="org.eclipse.lsp4e.openCallHierarchy">
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.selectionRange.LSPSelectionRangeUpHandler"
-            commandId="org.eclipse.lsp4e.selectionRange.up">
-         <activeWhen>
-            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.selectionRange.LSPSelectionRangeDownHandler"
-            commandId="org.eclipse.lsp4e.selectionRange.down">
-         <activeWhen>
-            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyHandler"
-            commandId="org.eclipse.lsp4e.typeHierarchy">
-         <activeWhen>
-            <reference
-                  definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer">
-            </reference>
-         </activeWhen>
-      </handler>
-      <handler
-            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyViewHandler"
-            commandId="org.eclipse.lsp4e.openTypeHierarchy">
-         <activeWhen>
-            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
-         </activeWhen>
-      </handler>
-   </extension>
-   <extension
-         point="org.eclipse.search.searchResultViewPages">
-      <viewPage
-            class="org.eclipse.lsp4e.operations.references.LSSearchResultPage"
-            id="org.eclipse.lsp4e.lsResultPage"
-            searchResultClass="org.eclipse.lsp4e.operations.references.LSSearchResult">
-      </viewPage>
    </extension>
 
-   <extension point="org.eclipse.core.runtime.preferences">
-      <initializer class="org.eclipse.lsp4e.ui.FoldingPreferencePage$PreferenceInitializer"/>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="org.eclipse.lsp4e.ui.LanguageServerPreferencePage"
-            id="org.eclipse.lsp4e.preferences"
-            name="%languageservers.preferences.page">
-      </page>
-      <page
-            category="org.eclipse.lsp4e.preferences"
-            class="org.eclipse.lsp4e.ui.LoggingPreferencePage"
-            id="org.eclipse.lsp4e.preferences.logging"
-            name="%languageservers.preferences.logging.page">
-      </page>
-      <page
-            category="org.eclipse.lsp4e.preferences"
-            class="org.eclipse.lsp4e.ui.FoldingPreferencePage"
-            id="org.eclipse.lsp4e.preferences.folding"
-            name="%languageservers.preferences.folding.page">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="true"
-            locationURI="popup:#TextEditorContext?after=additions">
-         <menu
-               id="org.eclipse.lsp4e.menu.refactorings"
-               label="%refactorings.menu.label">
-            <command
-                  commandId="org.eclipse.ui.edit.rename"
-                  style="push">
-            </command>
-            <separator
-                  name="org.eclipse.lsp4e.refactoringseparator">
-            </separator>
-         </menu>
-         <menu
-               id="org.eclipse.lsp4e.menu.codeActions"
-               label="%codeactions.menu.label">
-            <dynamic
-                  class="org.eclipse.lsp4e.operations.codeactions.LSPCodeActionsMenu"
-                  id="org.eclipse.lsp4e.codeActions">
-            </dynamic>
-         </menu>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.ui.views.ContentOutline">
-         <command
-               commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
-               label="Link with Editor"
-               style="toggle">
-            <visibleWhen>
-               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.ui.views.ContentOutline">
-         <command
-               commandId="org.eclipse.lsp4e.showkindinoutline"
-               label="Show Kind"
-               style="toggle">
-            <visibleWhen>
-               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.ui.views.ContentOutline">
-         <menu
-               id="org.eclipse.lsp4e.outline.hideMenu"
-               label="Hide...">
-            <visibleWhen>
-               <reference
-                     definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage">
-               </reference>
-            </visibleWhen>
-         </menu>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="menu:org.eclipse.lsp4e.outline.hideMenu">
-         <dynamic
-               class="org.eclipse.lsp4e.outline.OutlineViewHideSymbolKindMenuContributor"
-               id="org.eclipse.lsp4e.filters.dynamic">
-         </dynamic>
-      </menuContribution>
+   <!-- format: register menu entries -->
+   <extension point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="true"
             locationURI="popup:org.eclipse.ui.genericeditor.source.menu?after=additions">
@@ -341,8 +244,7 @@
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any?endof=group.generate">
          <!-- https://github.com/eclipse-platform/eclipse.platform.ui/blob/master/bundles/org.eclipse.ui.navigator/src/org/eclipse/ui/navigator/ICommonMenuConstants.java -->
          <!-- "Source/Format" menu entry in navigator popup menu -->
-         <menu
-               id="org.eclipse.lsp4e.menu.source"
+         <menu id="org.eclipse.lsp4e.menu.source"
                label="Source"
                mnemonic="S">
             <command commandId="org.eclipse.lsp4e.formatfile">
@@ -360,330 +262,143 @@
             </command>
          </menu>
       </menuContribution>
-      <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=additions">
-         <command
-               commandId="org.eclipse.lsp4e.toggleSortOutline"
-               id="org.eclipse.lsp4e.outline.toolbar.sort"
-               label="%command.toggle.outline.sort.label"
-               style="toggle">
-            <visibleWhen>
-               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=org.eclipse.lsp4e.outline.toolbar.sort">
-         <command
-               commandId="org.eclipse.lsp4e.toggleHideFieldsOutline"
-               label="%command.toggle.outline.hideFields.label"
-               style="toggle">
-            <visibleWhen>
-               <reference
-                     definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage">
-               </reference>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
-         <command
-               commandId="org.eclipse.lsp4e.openCallHierarchy">
-            <visibleWhen
-                  checkEnabled="false">
-               <and>
-                 <with variable="selection">
-                   <instanceof value="org.eclipse.jface.text.ITextSelection" />
-                 </with>
-                 <with variable="activeEditorInput">
-                   <test property="org.eclipse.lsp4e.hasLanguageServer" />
-                 </with>
-               </and>
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
-         <command
-               commandId="org.eclipse.lsp4e.typeHierarchy">
-            <visibleWhen
-                  checkEnabled="true">
-            </visibleWhen>
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#TextEditorContext?before=org.eclipse.ui.genericeditor.findReferences">
-         <command
-               commandId="org.eclipse.lsp4e.openTypeHierarchy">
-            <visibleWhen
-                  checkEnabled="true">
-            </visibleWhen>
-         </command>
-      </menuContribution>
    </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.contentAssistProcessors">
-      <contentAssistProcessor
-            class="org.eclipse.lsp4e.operations.completion.LSContentAssistProcessor"
-            contentType="org.eclipse.core.runtime.text">
-      </contentAssistProcessor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.hoverProviders">
-      <hoverProvider
-            class="org.eclipse.lsp4e.operations.hover.LSPTextHover"
-            contentType="org.eclipse.core.runtime.text"
-            id="org.eclipse.lsp4e.operations.hover.LSPTextHover">
-      </hoverProvider>
-   </extension>
-   <extension
-         point="org.eclipse.ui.bindings">
-      <key
-            commandId="org.eclipse.lsp4e.symbolInFile"
-            contextId="org.eclipse.ui.textEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+O">
-      </key>
-      <key
-            commandId="org.eclipse.lsp4e.symbolInWorkspace"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+T">
-      </key>
-      <key
-            commandId="org.eclipse.lsp4e.format"
-            contextId="org.eclipse.ui.textEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+M2+F">
-      </key>
 
-      <!-- refactoring -->
-      <key
-            sequence="M2+M3+R"
-            commandId="org.eclipse.ui.edit.rename"
-            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-      <key
-            commandId="org.eclipse.lsp4e.openCallHierarchy"
-            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="Ctrl+Alt+H">
-      </key>
 
-      <!-- edit -->
-      <key
-            sequence="M2+M3+ARROW_UP"
-            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
-            commandId="org.eclipse.lsp4e.selectionRange.up"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            sequence="M2+M3+ARROW_DOWN"
-            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
-            commandId="org.eclipse.lsp4e.selectionRange.down"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
-      <key
-            commandId="org.eclipse.lsp4e.typeHierarchy"
-            contextId="org.eclipse.ui.textEditorScope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+T">
-      </key>
-      <key
-            commandId="org.eclipse.lsp4e.openTypeHierarchy"
-            contextId="org.eclipse.ui.genericeditor.genericEditorContext"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="F4">
-      </key>
+   <!-- ===================================== -->
+   <!-- Go To Symbols Support                 -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.symbolInFile"
+            name="%commands.symbolsInFile.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.symbolInWorkspace"
+            name="%commands.symbolsInWorkspace.name" />
    </extension>
-   <extension
-         point="org.eclipse.core.runtime.adapters">
-      <factory
-            adaptableType="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
-            class="org.eclipse.lsp4e.outline.EditorToOutlineAdapterFactory">
-         <adapter
-               type="org.eclipse.ui.views.contentoutline.IContentOutlinePage">
-         </adapter>
-      </factory>
+
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInFileHandler"
+            commandId="org.eclipse.lsp4e.symbolInFile">
+      </handler>
+      <handler
+            class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInWorkspaceHandler"
+            commandId="org.eclipse.lsp4e.symbolInWorkspace">
+         <activeWhen>
+            <reference
+                  definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer">
+            </reference>
+         </activeWhen>
+      </handler>
    </extension>
-   <extension
-         point="org.eclipse.ui.navigator.navigatorContent">
-      <navigatorContent
-            activeByDefault="true"
-            contentProvider="org.eclipse.lsp4e.outline.LSSymbolsContentProvider"
-            labelProvider="org.eclipse.lsp4e.outline.SymbolsLabelProvider"
-            id="org.eclipse.lsp4e.outline.content"
-            name="LS Symbols">
-         <triggerPoints>
-            <or></or>
-         </triggerPoints>
-         <commonSorter
-               id="org.eclipse.lsp4e.outline.OutlineSorter"
-               class="org.eclipse.lsp4e.outline.OutlineSorter" />
-      </navigatorContent>
+
+   <extension point="org.eclipse.ui.quickAccess">
+      <computer
+            class="org.eclipse.lsp4e.operations.symbols.WorkspaceSymbolsQuickAccessProvider"
+            name="Workspace Symbols"
+            requiresUIAccess="false"/>
    </extension>
-   <extension
-         point="org.eclipse.ui.navigator.viewer">
-      <viewer
-            viewerId="org.eclipse.lsp4e.outline">
-      </viewer>
-      <viewerContentBinding
-            viewerId="org.eclipse.lsp4e.outline">
-         <includes>
-            <contentExtension
-                  isRoot="true"
-                  pattern="org.eclipse.lsp4e.outline.content">
-            </contentExtension>
-         </includes>
-      </viewerContentBinding>
+
+
+   <!-- ===================================== -->
+   <!-- Hyperlink Detector Support            -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            id="org.eclipse.lsp4e.hyperlinkDetector"
+            activate="true"
+            class="org.eclipse.lsp4e.operations.declaration.OpenDeclarationHyperlinkDetector"
+            description="%openDeclarationHyperlink_description"
+            name="%openDeclarationHyperlink_name"
+            targetId="org.eclipse.ui.DefaultTextEditor" />
+      <hyperlinkDetector
+            id="org.eclipse.lsp4e.documentLinkDetector"
+            activate="true"
+            class="org.eclipse.lsp4e.operations.documentLink.DocumentLinkDetector"
+            description="Document Link Detector"
+            name="Document Link Detector"
+            targetId="org.eclipse.ui.DefaultTextEditor" />
    </extension>
-   <extension
-         point="org.eclipse.core.filebuffers.documentSetup">
-      <participant
-            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
-            contentTypeId="org.eclipse.core.runtime.text">
-      </participant>
+
+
+   <!-- ===================================== -->
+   <!-- Refactoring: Rename Support           -->
+   <!-- ===================================== -->
+
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.lsp4e.operations.rename.LSPRenameHandler"
+            commandId="org.eclipse.ui.edit.rename">
+         <activeWhen>
+            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
+         </activeWhen>
+      </handler>
    </extension>
-   <extension point="org.eclipse.ui.editors.annotationTypes">
-      <type name="org.eclipse.lsp4e.read"></type>
-      <type name="org.eclipse.lsp4e.write"></type>
-      <type name="org.eclipse.lsp4e.text"></type>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:#TextEditorContext?after=additions">
+         <menu id="org.eclipse.lsp4e.menu.refactorings"
+               label="%refactorings.menu.label">
+            <command commandId="org.eclipse.ui.edit.rename" style="push" />
+            <separator name="org.eclipse.lsp4e.refactoringseparator" />
+         </menu>
+         <menu id="org.eclipse.lsp4e.menu.codeActions"
+               label="%codeactions.menu.label">
+            <dynamic
+                  class="org.eclipse.lsp4e.operations.codeactions.LSPCodeActionsMenu"
+                  id="org.eclipse.lsp4e.codeActions" />
+         </menu>
+      </menuContribution>
    </extension>
-   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-		<specification annotationType="org.eclipse.lsp4e.read"
-			label="LSP Read Occurrence"
-			textPreferenceKey="LSP4EReadOccurrenceIndication" textPreferenceValue="false"
-			highlightPreferenceKey="LSP4EReadOccurrenceHighlighting"
-			highlightPreferenceValue="true" contributesToHeader="false"
-			overviewRulerPreferenceKey="LSP4EReadOccurrenceIndicationInOverviewRuler"
-			overviewRulerPreferenceValue="true"
-			verticalRulerPreferenceKey="LSP4EReadOccurrenceIndicationInVerticalRuler"
-			verticalRulerPreferenceValue="false" colorPreferenceKey="LSP4EReadOccurrenceIndicationColor"
-			colorPreferenceValue="212,212,212" presentationLayer="4"
-			showInNextPrevDropdownToolbarAction="true"
-			showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.read.showInNextPrevDropdownToolbarAction"
-			isGoToNextNavigationTarget="true"
-			isGoToNextNavigationTargetKey="org.eclipse.lsp4e.read.isGoToNextNavigationTarget"
-			isGoToPreviousNavigationTarget="true"
-			isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.read.isGoToPreviousNavigationTarget"
-			textStylePreferenceKey="LSP4EReadOccurrenceTextStyle"
-			textStylePreferenceValue="NONE">
-		</specification>
+
+
+   <!-- ===================================== -->
+   <!-- Selection Range Support               -->
+   <!-- ===================================== -->
+
+   <!-- define commands -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.selection.range.up.description"
+            id="org.eclipse.lsp4e.selectionRange.up"
+            name="%command.selection.range.up.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.selection.range.down.description"
+            id="org.eclipse.lsp4e.selectionRange.down"
+            name="%command.selection.range.down.name" />
    </extension>
-   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-		<specification annotationType="org.eclipse.lsp4e.write"
-			label="LSP Write Occurrence"
-			textPreferenceKey="LSP4EWriteOccurrenceIndication" textPreferenceValue="false"
-			highlightPreferenceKey="LSP4EWriteOccurrenceHighlighting"
-			highlightPreferenceValue="true" contributesToHeader="false"
-			overviewRulerPreferenceKey="LSP4EWriteOccurrenceIndicationInOverviewRuler"
-			overviewRulerPreferenceValue="true"
-			verticalRulerPreferenceKey="LSP4EWriteOccurrenceIndicationInVerticalRuler"
-			verticalRulerPreferenceValue="false" colorPreferenceKey="LSP4EWriteOccurrenceIndicationColor"
-			colorPreferenceValue="240,216,168" presentationLayer="4"
-			showInNextPrevDropdownToolbarAction="true"
-			showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.write.showInNextPrevDropdownToolbarAction"
-			isGoToNextNavigationTarget="true"
-			isGoToNextNavigationTargetKey="org.eclipse.lsp4e.write.isGoToNextNavigationTarget"
-			isGoToPreviousNavigationTarget="true"
-			isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.write.isGoToPreviousNavigationTarget"
-			textStylePreferenceKey="LSP4EWriteOccurrenceTextStyle"
-			textStylePreferenceValue="NONE">
-		</specification>
+
+   <!-- register command handlers -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.lsp4e.operations.selectionRange.LSPSelectionRangeUpHandler"
+            commandId="org.eclipse.lsp4e.selectionRange.up">
+         <activeWhen>
+            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.lsp4e.operations.selectionRange.LSPSelectionRangeDownHandler"
+            commandId="org.eclipse.lsp4e.selectionRange.down">
+         <activeWhen>
+            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
+         </activeWhen>
+      </handler>
    </extension>
-   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
-		<specification annotationType="org.eclipse.lsp4e.text"
-			label="LSP Text Occurrence"
-			textPreferenceKey="LSP4ETextOccurrenceIndication" textPreferenceValue="false"
-			highlightPreferenceKey="LSP4ETextOccurrenceHighlighting"
-			highlightPreferenceValue="true" contributesToHeader="false"
-			overviewRulerPreferenceKey="LSP4ETextOccurrenceIndicationInOverviewRuler"
-			overviewRulerPreferenceValue="true"
-			verticalRulerPreferenceKey="LSP4ETextOccurrenceIndicationInVerticalRuler"
-			verticalRulerPreferenceValue="false" colorPreferenceKey="LSP4ETextOccurrenceIndicationColor"
-			colorPreferenceValue="212,212,212" presentationLayer="4"
-			showInNextPrevDropdownToolbarAction="true"
-			showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.text.showInNextPrevDropdownToolbarAction"
-			isGoToNextNavigationTarget="true"
-			isGoToNextNavigationTargetKey="org.eclipse.lsp4e.text.isGoToNextNavigationTarget"
-			isGoToPreviousNavigationTarget="true"
-			isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.text.isGoToPreviousNavigationTarget"
-			textStylePreferenceKey="LSP4ETextOccurrenceTextStyle"
-			textStylePreferenceValue="NONE">
-		</specification>
-   </extension>
-   <extension
-         point="org.eclipse.core.expressions.propertyTesters">
-      <propertyTester
-            class="org.eclipse.lsp4e.outline.SymbolInformationPropertyTester"
-            id="org.eclipse.lsp4e.SymbolInformationPropertyTester"
-            namespace="org.eclipse.lsp4e.symbolInformation"
-            properties="extension,contentTypeId"
-            type="java.lang.Object">
-      </propertyTester>
-      <propertyTester
-            class="org.eclipse.lsp4e.HasLanguageServerPropertyTester"
-            id="org.eclipse.lsp4e.hasLanguageServerPropertyTester"
-            namespace="org.eclipse.lsp4e"
-            properties="hasLanguageServer"
-            type="java.lang.Object">
-      </propertyTester>
-      <propertyTester
-            class="org.eclipse.lsp4e.outline.HasCNFOutlinePage"
-            id="org.eclipse.lsp4e.hasCNFOutlinePage"
-            namespace="org.eclipse.lsp4e"
-            properties="hasCNFOutlinePage"
-            type="java.lang.Object">
-      </propertyTester>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commandImages">
-      <image
-            commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
-            disabledIcon="icons/full/dlcl16/link_to_editor.png"
-            icon="icons/full/elcl16/link_to_editor.png">
-      </image>
-      <image
-            commandId="org.eclipse.lsp4e.toggleHideFieldsOutline"
-            disabledIcon="icons/full/dlcl16/fields_co.png"
-            icon="icons/full/elcl16/fields_co.png">
-      </image>
-      <image
-            commandId="org.eclipse.lsp4e.toggleSortOutline"
-            disabledIcon="icons/full/dlcl16/alphab_sort_co.png"
-            icon="icons/full/elcl16/alphab_sort_co.png">
-      </image>
-   </extension>
-   <extension
-         point="org.eclipse.e4.ui.css.swt.theme">
-      <stylesheet
-            uri="resources/css/dark.css">
-         <themeid
-               refid="org.eclipse.e4.ui.css.theme.e4_dark">
-         </themeid>
-      </stylesheet>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.highlightReconcilers">
-      <highlightReconcilingStrategy
-            class="org.eclipse.lsp4e.operations.highlight.HighlightReconcilingStrategy"
-            contentType="org.eclipse.core.runtime.text">
-         <enabledWhen>
-            <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
-         </enabledWhen>
-      </highlightReconcilingStrategy>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.foldingReconcilers">
-      <foldingReconcilingStrategy
-            class="org.eclipse.lsp4e.operations.folding.LSPFoldingReconcilingStrategy"
-            contentType="org.eclipse.core.runtime.text">
-         <enabledWhen>
-            <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
-         </enabledWhen>
-      </foldingReconcilingStrategy>
-   </extension>
-   <extension
-         point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+
+
+   <!-- ===================================== -->
+   <!-- Code Assistance Features              -->
+   <!-- ===================================== -->
+
+   <extension point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
       <codeMiningProvider
             class="org.eclipse.lsp4e.operations.codelens.CodeLensProvider"
             id="org.eclipse.lsp4e.codelens"
@@ -709,35 +424,14 @@
          </enabledWhen>
       </codeMiningProvider>
    </extension>
-   <extension
-         point="org.eclipse.ui.quickAccess">
-      <computer
-            class="org.eclipse.lsp4e.operations.symbols.WorkspaceSymbolsQuickAccessProvider"
-            name="Workspace Symbols"
-            requiresUIAccess="false"/>
+
+   <extension point="org.eclipse.ui.genericeditor.contentAssistProcessors">
+      <contentAssistProcessor
+            class="org.eclipse.lsp4e.operations.completion.LSContentAssistProcessor"
+            contentType="org.eclipse.core.runtime.text" />
    </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.quickAssistProcessors">
-      <quickAssistProcessor
-            class="org.eclipse.lsp4e.operations.codeactions.LSPCodeActionQuickAssistProcessor"
-            contentType="org.eclipse.core.runtime.text">
-      </quickAssistProcessor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <commandParameterType
-            converter="org.eclipse.lsp4e.command.internal.CommandConverter"
-            id="org.eclipse.lsp4e.commandParameterType"
-            type="org.eclipse.lsp4j.Command">
-      </commandParameterType>
-      <commandParameterType
-            converter="org.eclipse.lsp4e.command.internal.PathConverter"
-            id="org.eclipse.lsp4e.pathParameterType"
-            type="org.eclipse.core.runtime.IPath">
-      </commandParameterType>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.reconcilers">
+
+   <extension point="org.eclipse.ui.genericeditor.reconcilers">
       <reconcilingStrategy
             class="org.eclipse.lsp4e.operations.linkedediting.LSPLinkedEditingReconcilingStrategy"
             contentType="org.eclipse.core.runtime.text">
@@ -745,9 +439,6 @@
             <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
          </enabledWhen>
       </reconcilingStrategy>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.reconcilers">
       <reconcilingStrategy
             class="org.eclipse.lsp4e.operations.documentLink.LSPDocumentLinkPresentationReconcilingStrategy"
             contentType="org.eclipse.core.runtime.text">
@@ -755,9 +446,6 @@
             <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
          </enabledWhen>
       </reconcilingStrategy>
-   </extension>
-   <extension
-         point="org.eclipse.ui.genericeditor.reconcilers">
       <reconcilingStrategy
             class="org.eclipse.lsp4e.operations.semanticTokens.SemanticHighlightReconcilerStrategy"
             contentType="org.eclipse.core.runtime.text">
@@ -766,67 +454,126 @@
          </enabledWhen>
       </reconcilingStrategy>
    </extension>
-   <extension
-         point="org.eclipse.ui.views">
-      <view
-            category="org.eclipse.lsp4e.views"
-            class="org.eclipse.lsp4e.callhierarchy.CallHierarchyView"
-            icon="icons/full/dlcl16/call_hierarchy.gif"
-            id="org.eclipse.lsp4e.callHierarchy.callHierarchyView"
-            name="%view.callHierarchy.name"
-            restorable="true">
-      </view>
-      <category
-            id="org.eclipse.lsp4e.views"
-            name="%viewsCategory.name">
-      </category>
-      <view
-            category="org.eclipse.lsp4e.views"
-            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyView"
-            icon="icons/full/dlcl16/type_hierarchy.gif"
-            id="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyView"
-            name="%view.typeHierarchy.name"
-            restorable="true">
-      </view>
-      <view
-            category="org.eclipse.lsp4e.views"
-            class="org.eclipse.lsp4e.ui.LanguageServersView"
-            id="org.eclipse.lsp4e.ui.languageServersView"
-            name="%view.languageServers.name"
-            restorable="true">
-      </view>
 
+   <extension point="org.eclipse.ui.genericeditor.highlightReconcilers">
+      <highlightReconcilingStrategy
+            class="org.eclipse.lsp4e.operations.highlight.HighlightReconcilingStrategy"
+            contentType="org.eclipse.core.runtime.text">
+         <enabledWhen>
+            <reference definitionId="org.eclipse.lsp4e.editorHasLanguageServer" />
+         </enabledWhen>
+      </highlightReconcilingStrategy>
    </extension>
 
+   <extension point="org.eclipse.ui.genericeditor.hoverProviders">
+      <hoverProvider
+            class="org.eclipse.lsp4e.operations.hover.LSPTextHover"
+            contentType="org.eclipse.core.runtime.text"
+            id="org.eclipse.lsp4e.operations.hover.LSPTextHover" />
+   </extension>
+
+   <extension point="org.eclipse.ui.genericeditor.quickAssistProcessors">
+      <quickAssistProcessor
+            class="org.eclipse.lsp4e.operations.codeactions.LSPCodeActionQuickAssistProcessor"
+            contentType="org.eclipse.core.runtime.text">
+      </quickAssistProcessor>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Editor Annotation Types               -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.editors.annotationTypes">
+      <type name="org.eclipse.lsp4e.read" />
+      <type name="org.eclipse.lsp4e.write" />
+      <type name="org.eclipse.lsp4e.text" />
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification annotationType="org.eclipse.lsp4e.read"
+         label="LSP Read Occurrence"
+         textPreferenceKey="LSP4EReadOccurrenceIndication"
+         textPreferenceValue="false"
+         highlightPreferenceKey="LSP4EReadOccurrenceHighlighting"
+         highlightPreferenceValue="true"
+         contributesToHeader="false"
+         overviewRulerPreferenceKey="LSP4EReadOccurrenceIndicationInOverviewRuler"
+         overviewRulerPreferenceValue="true"
+         verticalRulerPreferenceKey="LSP4EReadOccurrenceIndicationInVerticalRuler"
+         verticalRulerPreferenceValue="false"
+         colorPreferenceKey="LSP4EReadOccurrenceIndicationColor"
+         colorPreferenceValue="212,212,212"
+         presentationLayer="4"
+         showInNextPrevDropdownToolbarAction="true"
+         showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.read.showInNextPrevDropdownToolbarAction"
+         isGoToNextNavigationTarget="true"
+         isGoToNextNavigationTargetKey="org.eclipse.lsp4e.read.isGoToNextNavigationTarget"
+         isGoToPreviousNavigationTarget="true"
+         isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.read.isGoToPreviousNavigationTarget"
+         textStylePreferenceKey="LSP4EReadOccurrenceTextStyle"
+         textStylePreferenceValue="NONE" />
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification annotationType="org.eclipse.lsp4e.write"
+         label="LSP Write Occurrence"
+         textPreferenceKey="LSP4EWriteOccurrenceIndication"
+         textPreferenceValue="false"
+         highlightPreferenceKey="LSP4EWriteOccurrenceHighlighting"
+         highlightPreferenceValue="true"
+         contributesToHeader="false"
+         overviewRulerPreferenceKey="LSP4EWriteOccurrenceIndicationInOverviewRuler"
+         overviewRulerPreferenceValue="true"
+         verticalRulerPreferenceKey="LSP4EWriteOccurrenceIndicationInVerticalRuler"
+         verticalRulerPreferenceValue="false"
+         colorPreferenceKey="LSP4EWriteOccurrenceIndicationColor"
+         colorPreferenceValue="240,216,168"
+         presentationLayer="4"
+         showInNextPrevDropdownToolbarAction="true"
+         showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.write.showInNextPrevDropdownToolbarAction"
+         isGoToNextNavigationTarget="true"
+         isGoToNextNavigationTargetKey="org.eclipse.lsp4e.write.isGoToNextNavigationTarget"
+         isGoToPreviousNavigationTarget="true"
+         isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.write.isGoToPreviousNavigationTarget"
+         textStylePreferenceKey="LSP4EWriteOccurrenceTextStyle"
+         textStylePreferenceValue="NONE" />
+   </extension>
+   <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification annotationType="org.eclipse.lsp4e.text"
+         label="LSP Text Occurrence"
+         textPreferenceKey="LSP4ETextOccurrenceIndication"
+         textPreferenceValue="false"
+         highlightPreferenceKey="LSP4ETextOccurrenceHighlighting"
+         highlightPreferenceValue="true"
+         contributesToHeader="false"
+         overviewRulerPreferenceKey="LSP4ETextOccurrenceIndicationInOverviewRuler"
+         overviewRulerPreferenceValue="true"
+         verticalRulerPreferenceKey="LSP4ETextOccurrenceIndicationInVerticalRuler"
+         verticalRulerPreferenceValue="false"
+         colorPreferenceKey="LSP4ETextOccurrenceIndicationColor"
+         colorPreferenceValue="212,212,212"
+         presentationLayer="4"
+         showInNextPrevDropdownToolbarAction="true"
+         showInNextPrevDropdownToolbarActionKey="org.eclipse.lsp4e.text.showInNextPrevDropdownToolbarAction"
+         isGoToNextNavigationTarget="true"
+         isGoToNextNavigationTargetKey="org.eclipse.lsp4e.text.isGoToNextNavigationTarget"
+         isGoToPreviousNavigationTarget="true"
+         isGoToPreviousNavigationTargetKey="org.eclipse.lsp4e.text.isGoToPreviousNavigationTarget"
+         textStylePreferenceKey="LSP4ETextOccurrenceTextStyle"
+         textStylePreferenceValue="NONE" />
+   </extension>
+
+
+   <!-- ===================================== -->
    <!-- reusable expression definitions, see https://wiki.eclipse.org/Command_Core_Expressions -->
+   <!-- ===================================== -->
    <extension point="org.eclipse.core.expressions.definitions">
-      <definition id="org.eclipse.lsp4e.activePartHasCNFOutlinePage">
-         <with variable="activePart">
-            <and>
-               <instanceof value="org.eclipse.ui.views.contentoutline.ContentOutline" />
-               <test property="org.eclipse.lsp4e.hasCNFOutlinePage" />
-            </and>
-         </with>
-      </definition>
-      <definition
-            id="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage">
-         <with
-               variable="activeEditor">
-            <test
-                  property="org.eclipse.lsp4e.hasCNFOutlinePage">
-            </test>
-         </with>
-      </definition>
       <definition id="org.eclipse.lsp4e.editorHasLanguageServer">
          <or>
             <with variable="editorInput">
-               <test
-                     forcePluginActivation="true"
+               <test forcePluginActivation="true"
                      property="org.eclipse.lsp4e.hasLanguageServer"/>
             </with>
             <with variable="viewer">
-               <test
-                     forcePluginActivation="true"
+               <test forcePluginActivation="true"
                      property="org.eclipse.lsp4e.hasLanguageServer"/>
             </with>
          </or>
@@ -837,14 +584,323 @@
                <instanceof value="org.eclipse.jface.text.ITextSelection" />
             </with>
             <or>
-	            <with variable="activeEditorInput">
-               		<test property="org.eclipse.lsp4e.hasLanguageServer" />
-            	</with>
-				<with variable="activeEditor">
-               		<test property="org.eclipse.lsp4e.hasLanguageServer"/>
-            	</with>
+               <with variable="activeEditor">
+                  <test property="org.eclipse.lsp4e.hasLanguageServer"/>
+               </with>
+               <with variable="activeEditorInput">
+                  <test property="org.eclipse.lsp4e.hasLanguageServer" />
+               </with>
             </or>
          </and>
       </definition>
+      <definition id="org.eclipse.lsp4e.activePartHasCNFOutlinePage">
+         <with variable="activePart">
+            <and>
+               <instanceof value="org.eclipse.ui.views.contentoutline.ContentOutline" />
+               <test property="org.eclipse.lsp4e.hasCNFOutlinePage" />
+            </and>
+         </with>
+      </definition>
+      <definition id="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage">
+         <with variable="activeEditor">
+            <test property="org.eclipse.lsp4e.hasCNFOutlinePage" />
+         </with>
+      </definition>
    </extension>
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.eclipse.lsp4e.HasLanguageServerPropertyTester"
+            id="org.eclipse.lsp4e.hasLanguageServerPropertyTester"
+            namespace="org.eclipse.lsp4e"
+            properties="hasLanguageServer"
+            type="java.lang.Object" />
+      <propertyTester
+            class="org.eclipse.lsp4e.outline.HasCNFOutlinePage"
+            id="org.eclipse.lsp4e.hasCNFOutlinePage"
+            namespace="org.eclipse.lsp4e"
+            properties="hasCNFOutlinePage"
+            type="java.lang.Object" />
+      <propertyTester
+            class="org.eclipse.lsp4e.outline.SymbolInformationPropertyTester"
+            id="org.eclipse.lsp4e.SymbolInformationPropertyTester"
+            namespace="org.eclipse.lsp4e.symbolInformation"
+            properties="extension,contentTypeId"
+            type="java.lang.Object" />
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Call/Type Hierarchy Support           -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.lsp4e.views"
+            class="org.eclipse.lsp4e.callhierarchy.CallHierarchyView"
+            icon="icons/full/dlcl16/call_hierarchy.gif"
+            id="org.eclipse.lsp4e.callHierarchy.callHierarchyView"
+            name="%view.callHierarchy.name"
+            restorable="true" />
+      <view
+            category="org.eclipse.lsp4e.views"
+            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyView"
+            icon="icons/full/dlcl16/type_hierarchy.gif"
+            id="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyView"
+            name="%view.typeHierarchy.name"
+            restorable="true" />
+   </extension>
+
+   <!-- call/type hierarchy: define commands -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.open.call.hierarchy.description"
+            id="org.eclipse.lsp4e.openCallHierarchy"
+            name="%command.open.call.hierarchy.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.selection.range.down.description"
+            id="org.eclipse.lsp4e.selectionRange.down"
+            name="%command.selection.range.down.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.open.quick.type.hierarchy.description"
+            id="org.eclipse.lsp4e.typeHierarchy"
+            name="%command.open.quick.type.hierarchy.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            description="%command.open.type.hierarchy.description"
+            id="org.eclipse.lsp4e.openTypeHierarchy"
+            name="%command.open.type.hierarchy.name" />
+   </extension>
+
+   <!-- call/type hierarchy: register command handlers -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="org.eclipse.lsp4e.callhierarchy.CallHierarchyCommandHandler"
+            commandId="org.eclipse.lsp4e.openCallHierarchy" />
+      <handler
+            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyHandler"
+            commandId="org.eclipse.lsp4e.typeHierarchy">
+         <activeWhen>
+            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
+         </activeWhen>
+      </handler>
+      <handler
+            class="org.eclipse.lsp4e.operations.typeHierarchy.TypeHierarchyViewHandler"
+            commandId="org.eclipse.lsp4e.openTypeHierarchy">
+         <activeWhen>
+            <reference definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer" />
+         </activeWhen>
+      </handler>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Outline Support                       -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            class="org.eclipse.lsp4e.outline.EditorToOutlineAdapterFactory">
+         <adapter type="org.eclipse.ui.views.contentoutline.IContentOutlinePage" />
+      </factory>
+   </extension>
+
+   <!-- outline: navigator content -->
+   <extension point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.eclipse.lsp4e.outline.LSSymbolsContentProvider"
+            labelProvider="org.eclipse.lsp4e.outline.SymbolsLabelProvider"
+            id="org.eclipse.lsp4e.outline.content"
+            name="LS Symbols">
+         <triggerPoints>
+            <or /> <!-- don't remove otherwise the outline will be empty -->
+         </triggerPoints>
+         <commonSorter
+               id="org.eclipse.lsp4e.outline.OutlineSorter"
+               class="org.eclipse.lsp4e.outline.OutlineSorter" />
+      </navigatorContent>
+   </extension>
+
+   <extension point="org.eclipse.ui.navigator.viewer">
+      <viewer viewerId="org.eclipse.lsp4e.outline" />
+      <viewerContentBinding viewerId="org.eclipse.lsp4e.outline">
+         <includes>
+            <contentExtension pattern="org.eclipse.lsp4e.outline.content" isRoot="true" />
+         </includes>
+      </viewerContentBinding>
+   </extension>
+
+   <!-- outline: define commands -->
+   <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.toggleSortOutline"
+            name="%command.toggle.outline.sort.name">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState" />
+      </command>
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.toggleHideFieldsOutline"
+            name="%command.toggle.outline.hideFields.name">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:false"
+               id="org.eclipse.ui.commands.toggleState" />
+      </command>
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.toggleLinkWithEditor"
+            name="Toggle Link with Editor">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:true"
+               id="org.eclipse.ui.commands.toggleState" />
+      </command>
+      <command
+            categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.showKindInOutline"
+            name="Show Kind in Outline">
+         <state
+               class="org.eclipse.ui.handlers.RegistryToggleState:true"
+               id="org.eclipse.ui.commands.toggleState" />
+      </command>
+   </extension>
+
+   <!-- outline: register command handlers -->
+   <extension point="org.eclipse.ui.handlers">
+      <handler commandId="org.eclipse.lsp4e.toggleSortOutline">
+         <class class="org.eclipse.lsp4e.outline.ToggleSortOutlineHandler" />
+      </handler>
+      <handler commandId="org.eclipse.lsp4e.toggleHideFieldsOutline">
+         <class class="org.eclipse.lsp4e.outline.ToggleHideFieldsOutlineHandler" />
+      </handler>
+      <handler commandId="org.eclipse.lsp4e.toggleLinkWithEditor">
+         <class class="org.eclipse.lsp4e.outline.ToggleLinkingHandler" />
+      </handler>
+      <handler commandId="org.eclipse.lsp4e.showKindInOutline">
+         <class class="org.eclipse.lsp4e.outline.ShowKindHandler" />
+      </handler>
+   </extension>
+
+   <!-- outline: command images -->
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+            commandId="org.eclipse.lsp4e.toggleSortOutline"
+            disabledIcon="icons/full/dlcl16/alphab_sort_co.png"
+            icon="icons/full/elcl16/alphab_sort_co.png" />
+      <image
+            commandId="org.eclipse.lsp4e.toggleHideFieldsOutline"
+            disabledIcon="icons/full/dlcl16/fields_co.png"
+            icon="icons/full/elcl16/fields_co.png" />
+      <image
+            commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
+            disabledIcon="icons/full/dlcl16/link_to_editor.png"
+            icon="icons/full/elcl16/link_to_editor.png" />
+   </extension>
+
+   <!-- outline: register commands as toolbar buttons -->
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+             allPopups="false"
+             locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=additions">
+         <command
+               commandId="org.eclipse.lsp4e.toggleSortOutline"
+               id="org.eclipse.lsp4e.outline.toolbar.sort"
+               label="%command.toggle.outline.sort.label"
+               style="toggle">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=org.eclipse.lsp4e.outline.toolbar.sort">
+         <command
+               commandId="org.eclipse.lsp4e.toggleHideFieldsOutline"
+               label="%command.toggle.outline.hideFields.label"
+               style="toggle">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+
+   <!-- outline: register commands as toolbar sandwich menu -->
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.views.ContentOutline">
+         <command
+               commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
+               label="Link with Editor"
+               style="toggle">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.views.ContentOutline">
+         <command
+               commandId="org.eclipse.lsp4e.showKindInOutline"
+               label="Show Kind"
+               style="toggle">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.views.ContentOutline">
+         <menu id="org.eclipse.lsp4e.outline.hideMenu"
+               label="Hide...">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.lsp4e.outline.hideMenu">
+         <dynamic
+               class="org.eclipse.lsp4e.outline.OutlineViewHideSymbolKindMenuContributor"
+               id="org.eclipse.lsp4e.filters.dynamic" />
+      </menuContribution>
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Language Servers View                 -->
+   <!-- ===================================== -->
+   <extension point="org.eclipse.ui.views">
+      <view
+            category="org.eclipse.lsp4e.views"
+            class="org.eclipse.lsp4e.ui.LanguageServersView"
+            id="org.eclipse.lsp4e.ui.languageServersView"
+            name="%view.languageServers.name"
+            restorable="true" />
+   </extension>
+
+
+   <!-- ===================================== -->
+   <!-- Deprecated                            -->
+   <!-- ===================================== -->
+   <!-- used by deprecated org.eclipse.lsp4e.command.CommandExecutor -->
+   <extension point="org.eclipse.ui.commands">
+      <commandParameterType
+            converter="org.eclipse.lsp4e.command.internal.CommandConverter"
+            id="org.eclipse.lsp4e.commandParameterType"
+            type="org.eclipse.lsp4j.Command" />
+      <commandParameterType
+            converter="org.eclipse.lsp4e.command.internal.PathConverter"
+            id="org.eclipse.lsp4e.pathParameterType"
+            type="org.eclipse.core.runtime.IPath" />
+   </extension>
+
 </plugin>
