@@ -62,7 +62,7 @@
       <command
             categoryId="org.eclipse.lsp4e.category"
             id="org.eclipse.lsp4e.symbolinworkspace"
-            name="%commands.symbolsInWorksapce.name">
+            name="%commands.symbolsInWorkspace.name">
       </command>
       <command
             categoryId="org.eclipse.lsp4e.category"
