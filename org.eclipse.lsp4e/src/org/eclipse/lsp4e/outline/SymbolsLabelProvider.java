@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.lsp4e.outline;
 
+import static org.eclipse.lsp4e.LSPEclipseUtils.findResourceFor;
 import static org.eclipse.lsp4e.internal.NullSafetyHelper.castNullable;
 
 import java.net.URI;
@@ -91,6 +92,7 @@ public class SymbolsLabelProvider extends LabelProvider
 	 * value: array of images decorated with marker for severity (index + 1)
 	 */
 	private final Map<Image, Image[]> overlays = new HashMap<>();
+	private final Map<Object /*URI|String*/, IResource> resourceCache = new HashMap<>();
 
 	private final boolean showLocation;
 
@@ -119,7 +121,7 @@ public class SymbolsLabelProvider extends LabelProvider
 
 	@Override
 	public @Nullable Image getImage(@Nullable Object element) {
-		if (element == null){
+		if (element == null) {
 			return null;
 		}
 		if (element instanceof PendingUpdateAdapter) {
@@ -131,28 +133,26 @@ public class SymbolsLabelProvider extends LabelProvider
 		if (element instanceof Either<?, ?> either) {
 			element = either.get();
 		}
-		Image res = null;
-		if (element instanceof SymbolInformation info) {
-			res = LSPImages.imageFromSymbolKind(info.getKind());
-		} else if (element instanceof WorkspaceSymbol symbol) {
-			res = LSPImages.imageFromSymbolKind(symbol.getKind());
-		} else if (element instanceof DocumentSymbol symbol) {
-			res = LSPImages.imageFromSymbolKind(symbol.getKind());
-		} else if (element instanceof DocumentSymbolWithURI symbolWithURI) {
-			res = LSPImages.imageFromSymbolKind(symbolWithURI.symbol.getKind());
-		}
+
+		Image image = null;
 		IResource file = null;
-		if (element instanceof SymbolInformation symbol) {
-			file = LSPEclipseUtils.findResourceFor(symbol.getLocation().getUri());
+		if (element instanceof SymbolInformation info) {
+			image = LSPImages.imageFromSymbolKind(info.getKind());
+			file = resourceCache.computeIfAbsent(info.getLocation().getUri(), uri -> findResourceFor((String) uri));
 		} else if (element instanceof WorkspaceSymbol symbol) {
-			file = LSPEclipseUtils.findResourceFor(getUri(symbol));
+			image = LSPImages.imageFromSymbolKind(symbol.getKind());
+			file = resourceCache.computeIfAbsent(getUri(symbol), uri -> findResourceFor((String) uri));
+		} else if (element instanceof DocumentSymbol symbol) {
+			image = LSPImages.imageFromSymbolKind(symbol.getKind());
 		} else if (element instanceof DocumentSymbolWithURI symbolWithURI) {
-			file = LSPEclipseUtils.findResourceFor(symbolWithURI.uri);
+			image = LSPImages.imageFromSymbolKind(symbolWithURI.symbol.getKind());
+			file = resourceCache.computeIfAbsent(symbolWithURI.uri, uri -> findResourceFor((URI) uri));
 		}
+
 		/*
-		 * Implementation node: for problem decoration,m aybe consider using a ILabelDecorator/IDelayedLabelDecorator?
+		 * Implementation node: for problem decoration, maybe consider using a ILabelDecorator/IDelayedLabelDecorator?
 		 */
-		if (file != null && res != null) {
+		if (file != null && image != null) {
 			Range range = null;
 			if (element instanceof SymbolInformation symbol) {
 				range = symbol.getLocation().getRange();
@@ -173,7 +173,7 @@ public class SymbolsLabelProvider extends LabelProvider
 					if (doc != null) {
 						int maxSeverity = getMaxSeverity(file, doc, range);
 						if (maxSeverity > IMarker.SEVERITY_INFO) {
-							return getOverlay(res, maxSeverity);
+							return getOverlay(image, maxSeverity);
 						}
 					}
 				} catch (CoreException | BadLocationException e) {
@@ -181,7 +181,7 @@ public class SymbolsLabelProvider extends LabelProvider
 				}
 			}
 		}
-		return res;
+		return image;
 	}
 
 	protected int getMaxSeverity(IResource resource, IDocument doc, Range range)
