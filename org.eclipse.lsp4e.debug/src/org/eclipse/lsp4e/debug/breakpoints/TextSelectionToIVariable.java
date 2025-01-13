@@ -10,6 +10,9 @@ package org.eclipse.lsp4e.debug.breakpoints;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Predicate;
@@ -125,7 +128,15 @@ public class TextSelectionToIVariable implements IAdapterFactory {
 			final var uri = LSPEclipseUtils.toUri(document);
 			if (uri == null)
 				return false;
-			return Objects.equals(uri.getPath(), sourceElement);
+
+			final URI sourceUri;
+			try {
+				sourceUri = Paths.get(sourceElement).toUri();
+			} catch (InvalidPathException invalidPath) {
+				return false;
+			}
+
+			return Objects.equals(uri.getPath(), sourceUri.getPath());
 		}
 		return false;
 	}
