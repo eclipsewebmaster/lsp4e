@@ -129,6 +129,8 @@ public class TextSelectionToIVariable implements IAdapterFactory {
 			if (uri == null)
 				return false;
 
+			// Convert sourceElement to a URI to normalize potential backslashes in the
+			// path. This can be necessary on Windows.
 			final URI sourceUri;
 			try {
 				sourceUri = Paths.get(sourceElement).toUri();
