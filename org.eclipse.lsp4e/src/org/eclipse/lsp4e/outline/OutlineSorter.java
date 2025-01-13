@@ -17,6 +17,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.lsp4e.LanguageServerPlugin;
+import org.eclipse.lsp4e.internal.HumanFriendlyComparator;
 import org.eclipse.lsp4e.outline.SymbolsModel.DocumentSymbolWithURI;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -40,7 +41,7 @@ public class OutlineSorter extends ViewerComparator {
 		if (name2 == null)
 			return 1;
 
-		return name1.compareTo(name2);
+		return HumanFriendlyComparator.DEFAULT.compare(name1, name2);
 	}
 
 	private @Nullable String getName(@Nullable Object element) {
