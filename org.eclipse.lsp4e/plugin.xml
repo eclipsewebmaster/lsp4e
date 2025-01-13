@@ -56,17 +56,17 @@
       </command>
       <command
             categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.symbolinfile"
+            id="org.eclipse.lsp4e.symbolInFile"
             name="%commands.symbolsInFile.name">
       </command>
       <command
             categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.symbolinworkspace"
+            id="org.eclipse.lsp4e.symbolInWorkspace"
             name="%commands.symbolsInWorkspace.name">
       </command>
       <command
             categoryId="org.eclipse.lsp4e.category"
-            id="org.eclipse.lsp4e.togglelinkwitheditor"
+            id="org.eclipse.lsp4e.toggleLinkWithEditor"
             name="Toggle Link with Editor">
          <state
                class="org.eclipse.ui.handlers.RegistryToggleState:true"
@@ -159,11 +159,11 @@
       </handler>
       <handler
             class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInFileHandler"
-            commandId="org.eclipse.lsp4e.symbolinfile">
+            commandId="org.eclipse.lsp4e.symbolInFile">
       </handler>
       <handler
             class="org.eclipse.lsp4e.operations.symbols.LSPSymbolInWorkspaceHandler"
-            commandId="org.eclipse.lsp4e.symbolinworkspace">
+            commandId="org.eclipse.lsp4e.symbolInWorkspace">
          <activeWhen>
             <reference
                   definitionId="org.eclipse.lsp4e.textSelectionHasLanguageServer">
@@ -171,7 +171,7 @@
          </activeWhen>
       </handler>
       <handler
-            commandId="org.eclipse.lsp4e.togglelinkwitheditor">
+            commandId="org.eclipse.lsp4e.toggleLinkWithEditor">
          <class
                class="org.eclipse.lsp4e.outline.ToggleLinkingHandler">
          </class>
@@ -287,7 +287,7 @@
             allPopups="false"
             locationURI="menu:org.eclipse.ui.views.ContentOutline">
          <command
-               commandId="org.eclipse.lsp4e.togglelinkwitheditor"
+               commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
                label="Link with Editor"
                style="toggle">
             <visibleWhen>
@@ -439,13 +439,13 @@
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="org.eclipse.lsp4e.symbolinfile"
+            commandId="org.eclipse.lsp4e.symbolInFile"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+O">
       </key>
       <key
-            commandId="org.eclipse.lsp4e.symbolinworkspace"
+            commandId="org.eclipse.lsp4e.symbolInWorkspace"
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+T">
@@ -638,7 +638,7 @@
    <extension
          point="org.eclipse.ui.commandImages">
       <image
-            commandId="org.eclipse.lsp4e.togglelinkwitheditor"
+            commandId="org.eclipse.lsp4e.toggleLinkWithEditor"
             disabledIcon="icons/full/dlcl16/link_to_editor.png"
             icon="icons/full/elcl16/link_to_editor.png">
       </image>
