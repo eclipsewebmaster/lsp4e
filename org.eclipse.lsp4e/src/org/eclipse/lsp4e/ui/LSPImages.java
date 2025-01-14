@@ -50,6 +50,7 @@ public final class LSPImages {
 	public static final String IMG_NAMESPACE = "IMG_NAMESPACE"; //$NON-NLS-1$
 	public static final String IMG_PACKAGE = "IMG_PACKAGE"; //$NON-NLS-1$
 	public static final String IMG_CLASS = "IMG_CLASS"; //$NON-NLS-1$
+	public static final String IMG_TYPE_PARAMETER = "IMG_TYPE_PARAMETER"; //$NON-NLS-1$
 	public static final String IMG_METHOD = "IMG_METOHD"; //$NON-NLS-1$
 	public static final String IMG_PROPERTY = "IMG_PROPERTY"; //$NON-NLS-1$
 	public static final String IMG_FIELD = "IMG_FIELD"; //$NON-NLS-1$
@@ -61,6 +62,7 @@ public final class LSPImages {
 	public static final String IMG_FUNCTION = "IMG_FUNCTION"; //$NON-NLS-1$
 	public static final String IMG_VARIABLE = "IMG_VARIABLE"; //$NON-NLS-1$
 	public static final String IMG_CONSTANT = "IMG_CONSTANT"; //$NON-NLS-1$
+	public static final String IMG_OBJECT = "IMG_OBJECT"; //$NON-NLS-1$
 	public static final String IMG_TEXT = "IMG_TEXT"; //$NON-NLS-1$
 	public static final String IMG_STRING = IMG_TEXT;
 	public static final String IMG_NUMBER = "IMG_NUMBER"; //$NON-NLS-1$
@@ -85,6 +87,7 @@ public final class LSPImages {
 		declareRegistryImage(IMG_NAMESPACE, OBJECT + "namespace.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_PACKAGE, OBJECT + "package.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_CLASS, OBJECT + "class.png"); //$NON-NLS-1$
+		declareRegistryImage(IMG_TYPE_PARAMETER, OBJECT + "type_parameter.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_METHOD, OBJECT + "method.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_PROPERTY, OBJECT + "property.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_FIELD, OBJECT + "field.png"); //$NON-NLS-1$
@@ -96,6 +99,7 @@ public final class LSPImages {
 		declareRegistryImage(IMG_FUNCTION, OBJECT + "function.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_VARIABLE, OBJECT + "variable.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_CONSTANT, OBJECT + "constant.png"); //$NON-NLS-1$
+      declareRegistryImage(IMG_OBJECT, OBJECT + "object.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_STRING, OBJECT + "string.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_NUMBER, OBJECT + "number.png"); //$NON-NLS-1$
 		declareRegistryImage(IMG_BOOLEAN, OBJECT + "boolean.png"); //$NON-NLS-1$
@@ -192,9 +196,11 @@ public final class LSPImages {
 		case Module -> getImage(IMG_MODULE);
 		case Namespace -> getImage(IMG_NAMESPACE);
 		case Number -> getImage(IMG_NUMBER);
+		case Object -> getImage(IMG_OBJECT);
 		case Package -> getImage(IMG_PACKAGE);
 		case Property -> getImage(IMG_PROPERTY);
 		case String -> getImage(IMG_STRING);
+		case TypeParameter -> getImage(IMG_TYPE_PARAMETER);
 		case Variable -> getImage(IMG_VARIABLE);
 		case Null -> getImage(IMG_NULL);
 		default -> EMPTY_IMAGE; // when the SymbolKind is out the cases above
