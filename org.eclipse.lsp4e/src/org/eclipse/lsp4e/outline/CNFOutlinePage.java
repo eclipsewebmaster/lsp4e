@@ -251,6 +251,10 @@ public class CNFOutlinePage implements IContentOutlinePage, ILabelProviderListen
 		}
 	}
 
+	public void collapseTree() {
+		outlineViewer.collapseAll();
+	}
+
 	@Override
 	public void dispose() {
 		preferences.removePreferenceChangeListener(this);

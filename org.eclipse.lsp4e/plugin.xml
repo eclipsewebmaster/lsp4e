@@ -736,6 +736,10 @@
    <extension point="org.eclipse.ui.commands">
       <command
             categoryId="org.eclipse.lsp4e.category"
+            id="org.eclipse.lsp4e.collapseAllOutline"
+            name="%command.toggle.outline.collapseAll.name" />
+      <command
+            categoryId="org.eclipse.lsp4e.category"
             id="org.eclipse.lsp4e.toggleSortOutline"
             name="%command.toggle.outline.sort.name">
          <state
@@ -770,6 +774,9 @@
 
    <!-- outline: register command handlers -->
    <extension point="org.eclipse.ui.handlers">
+      <handler commandId="org.eclipse.lsp4e.collapseAllOutline">
+         <class class="org.eclipse.lsp4e.outline.CollapseAllOutlineHandler" />
+      </handler>
       <handler commandId="org.eclipse.lsp4e.toggleSortOutline">
          <class class="org.eclipse.lsp4e.outline.ToggleSortOutlineHandler" />
       </handler>
@@ -786,6 +793,10 @@
 
    <!-- outline: command images -->
    <extension point="org.eclipse.ui.commandImages">
+      <image
+            commandId="org.eclipse.lsp4e.collapseAllOutline"
+            disabledIcon="platform:/plugin/org.eclipse.jdt.ui/icons/full/dlcl16/collapseall.png"
+            icon="platform:/plugin/org.eclipse.jdt.ui/icons/full/elcl16/collapseall.png" />
       <image
             commandId="org.eclipse.lsp4e.toggleSortOutline"
             disabledIcon="icons/full/dlcl16/alphab_sort_co.png"
@@ -805,6 +816,19 @@
       <menuContribution
              allPopups="false"
              locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=additions">
+         <command
+               commandId="org.eclipse.lsp4e.collapseAllOutline"
+               id="org.eclipse.lsp4e.outline.toolbar.collapseAll"
+               label="%command.toggle.outline.collapseAll.label"
+               style="push">
+            <visibleWhen>
+               <reference definitionId="org.eclipse.lsp4e.activeEditorHasCNFOutlinePage" />
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+             allPopups="false"
+             locationURI="toolbar:org.eclipse.ui.views.ContentOutline?after=org.eclipse.lsp4e.outline.toolbar.collapseAll">
          <command
                commandId="org.eclipse.lsp4e.toggleSortOutline"
                id="org.eclipse.lsp4e.outline.toolbar.sort"
