@@ -279,7 +279,7 @@ public class SymbolsLabelProvider extends LabelProvider
 		if (element instanceof SymbolInformation symbolInformation) {
 			name = symbolInformation.getName();
 			kind = symbolInformation.getKind();
-			deprecated = isDeprecated(symbolInformation.getTags()) || symbolInformation.getDeprecated() == null ? false: symbolInformation.getDeprecated();
+			deprecated = isDeprecated(symbolInformation.getTags()) || symbolInformation.getDeprecated() != null && symbolInformation.getDeprecated();
 			try {
 				location = URI.create(symbolInformation.getLocation().getUri());
 			} catch (IllegalArgumentException e) {
@@ -299,13 +299,13 @@ public class SymbolsLabelProvider extends LabelProvider
 			name = documentSymbol.getName();
 			kind = documentSymbol.getKind();
 			detail = documentSymbol.getDetail();
-			deprecated = isDeprecated(documentSymbol.getTags()) || documentSymbol.getDeprecated() == null ? false: documentSymbol.getDeprecated();
+			deprecated = isDeprecated(documentSymbol.getTags()) || documentSymbol.getDeprecated() != null && documentSymbol.getDeprecated();
 		} else if (element instanceof DocumentSymbolWithURI symbolWithURI) {
 			name = symbolWithURI.symbol.getName();
 			kind = symbolWithURI.symbol.getKind();
 			detail = symbolWithURI.symbol.getDetail();
 			location = symbolWithURI.uri;
-			deprecated = isDeprecated(symbolWithURI.symbol.getTags()) || symbolWithURI.symbol.getDeprecated() == null ? false: symbolWithURI.symbol.getDeprecated();
+			deprecated = isDeprecated(symbolWithURI.symbol.getTags()) || symbolWithURI.symbol.getDeprecated() != null && symbolWithURI.symbol.getDeprecated();
 		}
 		if (name != null) {
 			if (deprecated) {
