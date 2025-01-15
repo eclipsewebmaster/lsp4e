@@ -113,7 +113,7 @@ public class LoggingStreamConnectionProviderProxy implements StreamConnectionPro
 		this.logFile = getLogFile();
 	}
 
-	private enum Direction { LANGUAGE_SERVER_TO_LSP4E, LSP4E_TO_LANGUAGE_SERVER, ERROR_FROM_LANGUAGE_SERVER };
+	private enum Direction { LANGUAGE_SERVER_TO_LSP4E, LSP4E_TO_LANGUAGE_SERVER, ERROR_FROM_LANGUAGE_SERVER }
 
 	private String message(Direction direction, byte[] payload) {
 		String now = OffsetDateTime.now().toString();
