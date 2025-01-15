@@ -180,7 +180,7 @@ public class LSPFoldingReconcilingStrategy
 		// these are what are passed off to the annotation model to
 		// actually create and maintain the annotations
 		final var deletions = new ArrayList<FoldingAnnotation>();
-		final var existing = new ArrayList<FoldingAnnotation>();
+		final var existing = new HashMap<Position, FoldingAnnotation>();
 		final var additions = new HashMap<Annotation, Position>();
 
 		// find and mark all folding annotations with length 0 for deletion
@@ -210,7 +210,7 @@ public class LSPFoldingReconcilingStrategy
 		var theProjectionAnnotationModel = projectionAnnotationModel; //use local variable to prevent possible NPE
 		if (theProjectionAnnotationModel != null) {
 			if (!existing.isEmpty()) {
-				deletions.addAll(existing);
+				deletions.addAll(existing.values());
 			}
 			// send the calculated updates to the annotations to the
 			// annotation model
@@ -277,50 +277,19 @@ public class LSPFoldingReconcilingStrategy
 	 *            the end line number
 	 * @throws BadLocationException
 	 */
-	private void updateAnnotation(List<FoldingAnnotation> deletions, List<FoldingAnnotation> existing,
+	private void updateAnnotation(List<FoldingAnnotation> deletions, Map<Position, FoldingAnnotation> existing,
 			Map<Annotation, Position> additions, int line, Integer endLineNumber, boolean collapsedByDefault)
 			throws BadLocationException {
 		final var document = castNonNull(this.document);
 		int startOffset = document.getLineOffset(line);
 		int endOffset = document.getLineOffset(endLineNumber) + document.getLineLength(endLineNumber);
 		final var newPos = new Position(startOffset, endOffset - startOffset);
-		if (!existing.isEmpty()) {
-			FoldingAnnotation existingAnnotation = existing.remove(existing.size() - 1);
-			updateAnnotations(existingAnnotation, newPos, deletions);
-		} else {
+		FoldingAnnotation existingAnnotation = existing.remove(newPos);
+		if (existingAnnotation == null) {
 			additions.put(new FoldingAnnotation(collapsedByDefault), newPos);
 		}
 	}
 
-	/**
-	 * Update annotations.
-	 *
-	 * @param existingAnnotation
-	 *            the existing annotations that need to be updated based on the
-	 *            given dirtied IndexRegion
-	 * @param newPos
-	 *            the new position that caused the annotations need for updating and
-	 *            null otherwise.
-	 * @param deletions
-	 *            the list of annotations to be deleted
-	 */
-	protected void updateAnnotations(Annotation existingAnnotation, @Nullable Position newPos, List<FoldingAnnotation> deletions) {
-		if (existingAnnotation instanceof FoldingAnnotation foldingAnnotation) {
-			// if a new position can be calculated then update the position of
-			// the annotation,
-			// else the annotation needs to be deleted
-			var theProjectionAnnotationModel = projectionAnnotationModel;
-			if (newPos != null && newPos.length > 0 && theProjectionAnnotationModel != null) {
-				Position oldPos = theProjectionAnnotationModel.getPosition(foldingAnnotation);
-				// only update the position if we have to
-				if (!newPos.equals(oldPos)) {
-					theProjectionAnnotationModel.modifyAnnotationPosition(foldingAnnotation, newPos);
-				}
-			} else {
-				deletions.add(foldingAnnotation);
-			}
-		}
-	}
 
 	/**
 	 * <p>
@@ -335,8 +304,8 @@ public class LSPFoldingReconcilingStrategy
 	 *            that the newly found invalid {@link FoldingAnnotation}s will be
 	 *            added to
 	 */
-	protected void markInvalidAnnotationsForDeletion(List<FoldingAnnotation> deletions,
-			List<FoldingAnnotation> existing) {
+	private void markInvalidAnnotationsForDeletion(List<FoldingAnnotation> deletions,
+			Map<Position, FoldingAnnotation> existing) {
 		final var projectionAnnotationModel = this.projectionAnnotationModel;
 		if (projectionAnnotationModel == null)
 			return;
@@ -348,7 +317,10 @@ public class LSPFoldingReconcilingStrategy
 					if (pos.length == 0) {
 						deletions.add(foldingAnno);
 					} else {
-						existing.add(foldingAnno);
+						var duplicate = existing.put(pos, foldingAnno);
+						if (duplicate != null) {
+							deletions.add(duplicate);
+						}
 					}
 				}
 			}
