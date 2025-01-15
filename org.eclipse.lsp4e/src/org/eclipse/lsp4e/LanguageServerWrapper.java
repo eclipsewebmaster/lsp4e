@@ -913,7 +913,8 @@ public class LanguageServerWrapper {
 	}
 
 	/**
-	 * Warning: this is a long running operation
+	 * <b>IMPORTANT:</b> If the server isn't yet initialized this method will be
+	 * blocking for up to 10 seconds!
 	 *
 	 * @return the server capabilities, or null if initialization job didn't
 	 *         complete

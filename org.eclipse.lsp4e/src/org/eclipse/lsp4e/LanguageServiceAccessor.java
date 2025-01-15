@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -171,16 +172,17 @@ public class LanguageServiceAccessor {
 	 *         {@code capabilitesPredicate} does not test positive for the server's
 	 *         capabilities, {@code null} is returned.
 	 */
-	private static @Nullable CompletableFuture<LanguageServer> getInitializedLanguageServer(IResource resource,
+	private static CompletableFuture<@Nullable LanguageServer> getInitializedLanguageServer(IResource resource,
 			LanguageServerDefinition lsDefinition, @Nullable Predicate<ServerCapabilities> capabilitiesPredicate) {
 		LanguageServerWrapper wrapper = getLSWrapper(resource.getProject(), lsDefinition, resource.getFullPath());
-		if (capabilitiesComply(wrapper, capabilitiesPredicate)) {
-			return wrapper.getInitializedServer();
-		}
-		return null;
+		return capabilitiesComplyAsync(wrapper, capabilitiesPredicate)
+				.thenCompose(complies -> complies ? wrapper.getInitializedServer() : null);
 	}
 
 	/**
+	 * <b>IMPORTANT:</b> If the server isn't yet initialized this method will be
+	 * blocking for up to 10 seconds!
+	 *
 	 * Checks if the given {@code wrapper}'s capabilities comply with the given
 	 * {@code capabilitiesPredicate}.
 	 *
@@ -190,7 +192,7 @@ public class LanguageServiceAccessor {
 	 * @param capabilitiesPredicate
 	 *            predicate testing the capabilities of {@code wrapper}.
 	 * @return The result of applying the capabilities of {@code wrapper} to
-	 *         {@code capabilitiesPredicate}, or {@code false} if
+	 *         {@code capabilitiesPredicate}, or {@code true} if
 	 *         {@code capabilitiesPredicate == null} or
 	 *         {@code wrapper.getServerCapabilities() == null}
 	 */
@@ -202,6 +204,26 @@ public class LanguageServiceAccessor {
 				 */
 				|| wrapper.getServerCapabilities() == null
 				|| capabilitiesPredicate.test(castNonNull(wrapper.getServerCapabilities()));
+	}
+
+	/**
+	 * Asynchronously checks if the given {@code wrapper}'s capabilities comply with the given
+	 * {@code capabilitiesPredicate}.
+	 *
+	 * @param wrapper
+	 *            the server that's capabilities are tested with
+	 *            {@code capabilitiesPredicate}
+	 * @param capabilitiesPredicate
+	 *            predicate testing the capabilities of {@code wrapper}.
+	 * @return The result of applying the capabilities of {@code wrapper} to
+	 *         {@code capabilitiesPredicate}, or {@code true} if
+	 *         {@code capabilitiesPredicate == null}
+	 */
+	private static CompletableFuture<Boolean> capabilitiesComplyAsync(final LanguageServerWrapper wrapper,
+			final @Nullable Predicate<ServerCapabilities> capabilitiesPredicate) {
+		return capabilitiesPredicate == null //
+				? CompletableFuture.completedFuture(true) //
+				: wrapper.getServerCapabilitiesAsync().thenApply(capabilitiesPredicate::test);
 	}
 
 	/**
@@ -389,16 +411,28 @@ public class LanguageServiceAccessor {
 		}
 	}
 
+	/**
+	 * <b>IMPORTANT:</b> If the server isn't yet initialized this method will be
+	 * blocking for up to 10 seconds per server!
+	 */
 	public static List<LanguageServerWrapper> getStartedWrappers(@Nullable Predicate<ServerCapabilities> request,
 			boolean onlyActiveLS) {
 		return getStartedWrappers(w -> true, request, onlyActiveLS);
 	}
 
+	/**
+	 * <b>IMPORTANT:</b> If the server isn't yet initialized this method will be
+	 * blocking for up to 10 seconds per server!
+	 */
 	public static List<LanguageServerWrapper> getStartedWrappers(@Nullable IProject project,
 			@Nullable Predicate<ServerCapabilities> request, boolean onlyActiveLS) {
 		return getStartedWrappers(w -> w.canOperate(project), request, onlyActiveLS);
 	}
 
+	/**
+	 * <b>IMPORTANT:</b> If the server isn't yet initialized this method will be
+	 * blocking for up to 10 seconds per server!
+	 */
 	public static List<LanguageServerWrapper> getStartedWrappers(IDocument document,
 			Predicate<ServerCapabilities> request, boolean onlyActiveLS) {
 		return getStartedWrappers(w -> w.canOperate(document), request, onlyActiveLS);
@@ -411,6 +445,35 @@ public class LanguageServiceAccessor {
 			if ((!onlyActiveLS || wrapper.isActive()) && canOperatePredicate.test(wrapper)
 					&& capabilitiesComply(wrapper, capabilitiesPredicate)) {
 				result.add(wrapper);
+			}
+		}
+		return result;
+	}
+
+	public static Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> getStartedWrappersAsync(
+			final @Nullable Predicate<ServerCapabilities> request, final boolean onlyActiveLS) {
+		return getStartedWrappersAsync(w -> true, request, onlyActiveLS);
+	}
+
+	public static Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> getStartedWrappersAsync(
+			final @Nullable IProject project, final @Nullable Predicate<ServerCapabilities> request,
+			final boolean onlyActiveLS) {
+		return getStartedWrappersAsync(w -> w.canOperate(project), request, onlyActiveLS);
+	}
+
+	public static Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> getStartedWrappersAsync(final IDocument document,
+			final Predicate<ServerCapabilities> request, final boolean onlyActiveLS) {
+		return getStartedWrappersAsync(w -> w.canOperate(document), request, onlyActiveLS);
+	}
+
+	private static Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> getStartedWrappersAsync(
+			final Predicate<LanguageServerWrapper> canOperatePredicate,
+			final @Nullable Predicate<ServerCapabilities> capabilitiesPredicate, final boolean onlyActiveLS) {
+		final Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> result = new LinkedHashMap<>();
+		for (final LanguageServerWrapper wrapper : startedServers) {
+			if ((!onlyActiveLS || wrapper.isActive()) && canOperatePredicate.test(wrapper)) {
+				result.put(wrapper.serverDefinition, capabilitiesComplyAsync(wrapper, capabilitiesPredicate)
+						.thenApply(complies -> complies ? wrapper : null));
 			}
 		}
 		return result;

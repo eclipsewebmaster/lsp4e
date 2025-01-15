@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
@@ -328,12 +329,7 @@ public abstract class LanguageServers<E extends LanguageServers<E>> {
 		@Override
 		protected List<CompletableFuture<@Nullable LanguageServerWrapper>> getServers() {
 			// Compute list of servers from project & filter
-			Collection<LanguageServerWrapper> startedWrappers = order(LanguageServiceAccessor.getStartedWrappers(project, getFilter(), !restartStopped));
-			final var wrappers = new ArrayList<CompletableFuture<@Nullable LanguageServerWrapper>>(startedWrappers.size());
-			for (LanguageServerWrapper wrapper :  startedWrappers) {
-				wrappers.add(wrapper.getInitializedServer().thenApply(ls -> wrapper));
-			}
-			return wrappers;
+			return order(LanguageServiceAccessor.getStartedWrappersAsync(project, getFilter(), !restartStopped));
 		}
 	}
 
@@ -341,6 +337,30 @@ public abstract class LanguageServers<E extends LanguageServers<E>> {
 		return (obj instanceof Collection<?> c && c.isEmpty());
 	}
 
+	/**
+	 * @return a list of futures, reordered to prioritize the one matching the specified server definition,
+	 *         or in their original order if no match is found
+	 */
+	protected List<CompletableFuture<@Nullable LanguageServerWrapper>> order(
+			final Map<LanguageServerDefinition, CompletableFuture<@Nullable LanguageServerWrapper>> wrappers) {
+		if (serverDefinition == null || wrappers.size() < 2) {
+			return new ArrayList<>(wrappers.values());
+		}
+		final var result = new ArrayList<CompletableFuture<@Nullable LanguageServerWrapper>>(wrappers.size());
+		for (final var entry : wrappers.entrySet()) {
+			if (Objects.equals(serverDefinition, entry.getKey())) {
+				result.add(0, entry.getValue());
+			} else {
+				result.add(entry.getValue());
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @return a list of wrappers, reordered to prioritize the one matching the specified server definition,
+	 *         or in their original order if no match is found
+	 */
 	protected Collection<LanguageServerWrapper> order(Collection<LanguageServerWrapper> wrappers) {
 		if (serverDefinition != null && wrappers.size() > 1) {
 			final var temp = new ArrayList<LanguageServerWrapper>(wrappers);

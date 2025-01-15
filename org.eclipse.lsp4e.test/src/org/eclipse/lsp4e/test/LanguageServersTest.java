@@ -585,6 +585,28 @@ public class LanguageServersTest extends AbstractTestWithProject {
 	}
 
 	@Test
+	public void testAnyMatchingIsNonBlocking() throws Exception {
+		// test with no LS available
+		long start = System.currentTimeMillis();
+		assertFalse(LanguageServers.forProject(project).anyMatching());
+		long duration = System.currentTimeMillis() - start;
+		assertTrue("LanguageServers.anyMatching() took too long: " + duration + "ms", duration < 100);
+
+		// test with one slow LS available
+		MockLanguageServer.INSTANCE.setTimeToProceedQueries(5_000);
+		var testFile1 = createUniqueTestFile(project, "");
+		var editor1 = openEditor(testFile1);
+		start = System.currentTimeMillis();
+		try {
+			assertTrue(LanguageServers.forProject(project).anyMatching());
+			duration = System.currentTimeMillis() - start;
+			assertTrue("LanguageServers.anyMatching() took too long: " + duration + "ms", duration < 100);
+		} finally {
+			editor1.getSite().getPage().closeEditor(editor1, false);
+		}
+	}
+
+	@Test
 	public void testNoMatchingServers() throws Exception {
 		final var hoverResponse = new Hover(List.of(Either.forLeft("HoverContent")), new Range(new Position(0,  0), new Position(0, 10)));
 		MockLanguageServer.INSTANCE.setHover(hoverResponse);
