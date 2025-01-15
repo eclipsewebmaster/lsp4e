@@ -32,7 +32,7 @@
           <!-- External Eclipse null Annotations, see https://github.com/vegardit/no-npe -->
           <groupId>com.vegardit.no-npe</groupId>
           <artifactId>no-npe-eea-all</artifactId>
-          <version>1.3.0</version>
+          <version>1.3.1</version>
           <type>jar</type>
         </dependency>
       </dependencies>
