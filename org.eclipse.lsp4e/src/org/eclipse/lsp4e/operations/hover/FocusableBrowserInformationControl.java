@@ -106,7 +106,7 @@ public class FocusableBrowserInformationControl extends BrowserInformationContro
 				height += fontDatas[0].getHeight();
 			}
 
-			width = Double.valueOf(width * 1.5);
+			width = width * 1.5;
 			if (Util.isWin32()) {
 				height = adjust(height, marginTop);
 				height = adjust(height, marginBottom);

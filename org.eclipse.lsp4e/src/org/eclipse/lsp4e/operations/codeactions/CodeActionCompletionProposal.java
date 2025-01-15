@@ -55,7 +55,7 @@ public class CodeActionCompletionProposal implements ICompletionProposal {
 				CodeActionOptions options = caProvider.getRight();
 				var resolveProvider = options.getResolveProvider();
 				if (resolveProvider != null)
-					return resolveProvider.booleanValue();
+					return resolveProvider;
 			}
 		}
 		return false;
