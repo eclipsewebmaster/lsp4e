@@ -297,6 +297,24 @@ public class TestUtils {
 		return null;
 	}
 
+	public static void waitForAndAssertCondition(int timeout_ms, Runnable condition) {
+		waitForAndAssertCondition("Condition not met within expected time.", timeout_ms, condition);
+	}
+
+	public static void waitForAndAssertCondition(int timeout_ms, Display display, Runnable condition) {
+		waitForAndAssertCondition("Condition not met within expected time.", timeout_ms, display, () -> {
+			condition.run();
+			return true;
+		});
+	}
+
+	public static void waitForAndAssertCondition(String errorMessage, int timeout_ms, Runnable condition) {
+		waitForAndAssertCondition(errorMessage, timeout_ms, UI.getDisplay(), () -> {
+			condition.run();
+			return true;
+		});
+	}
+
 	public static void waitForAndAssertCondition(int timeout_ms, Condition condition) {
 		waitForAndAssertCondition("Condition not met within expected time.", timeout_ms, condition);
 	}

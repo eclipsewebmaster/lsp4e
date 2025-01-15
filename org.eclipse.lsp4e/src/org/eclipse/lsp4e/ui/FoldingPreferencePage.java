@@ -26,6 +26,7 @@ public class FoldingPreferencePage extends FieldEditorPreferencePage implements 
 
 	public static final String PREF_FOLDING_ENABLED = "foldingReconcilingStrategy.enabled"; //$NON-NLS-1$
 	public static final String PREF_AUTOFOLD_COMMENTS = "foldingReconcilingStrategy.collapseComments"; //$NON-NLS-1$
+	public static final String PREF_AUTOFOLD_LICENSE_HEADERS_COMMENTS = "foldingReconcilingStrategy.collapseLicenseHeaders"; //$NON-NLS-1$
 	public static final String PREF_AUTOFOLD_REGIONS = "foldingReconcilingStrategy.collapseRegions"; //$NON-NLS-1$
 	public static final String PREF_AUTOFOLD_IMPORT_STATEMENTS = "foldingReconcilingStrategy.collapseImports"; //$NON-NLS-1$
 
@@ -35,6 +36,7 @@ public class FoldingPreferencePage extends FieldEditorPreferencePage implements 
 			final var store = LanguageServerPlugin.getDefault().getPreferenceStore();
 			store.setDefault(PREF_FOLDING_ENABLED, true);
 			store.setDefault(PREF_AUTOFOLD_COMMENTS, false);
+			store.setDefault(PREF_AUTOFOLD_LICENSE_HEADERS_COMMENTS, false);
 			store.setDefault(PREF_AUTOFOLD_REGIONS, false);
 			store.setDefault(PREF_AUTOFOLD_IMPORT_STATEMENTS, false);
 		}
@@ -47,32 +49,61 @@ public class FoldingPreferencePage extends FieldEditorPreferencePage implements 
 
 	@Override
 	public void createFieldEditors() {
-		Composite parent = getFieldEditorParent();
+		final Composite parent = getFieldEditorParent();
 
-		// Add check boxes
-		addField(new BooleanFieldEditor( //
+		/*
+		 * check box to globally enable/disable folding
+		 */
+		final var foldingEnabled = new BooleanFieldEditor( //
 				PREF_FOLDING_ENABLED, //
 				"Enable folding", //$NON-NLS-1$
-				parent));
+				parent);
+		addField(foldingEnabled);
 
-		// Add a label before the field editors
 		final var label = new Label(parent, SWT.NONE);
-		label.setText("Initially fold these elements:"); //$NON-NLS-1$
+		label.setText("\nInitially fold these elements:"); //$NON-NLS-1$
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-		// Add check boxes
-		addField(new BooleanFieldEditor( //
+		/*
+		 * check boxes to control auto-folding
+		 */
+		final var autoFoldComments = new BooleanFieldEditor( //
 				PREF_AUTOFOLD_COMMENTS, //
 				"Comments", //$NON-NLS-1$
-				parent));
-		addField(new BooleanFieldEditor( //
-				PREF_AUTOFOLD_COMMENTS, //
+				parent);
+		addField(autoFoldComments);
+
+		final var autoFoldLicenseHeaders = new BooleanFieldEditor( //
+				PREF_AUTOFOLD_LICENSE_HEADERS_COMMENTS, //
+				"License Header Comments", //$NON-NLS-1$
+				parent);
+		addField(autoFoldLicenseHeaders);
+
+		final var autoFoldRegions = new BooleanFieldEditor( //
+				PREF_AUTOFOLD_REGIONS, //
 				"Folding Regions", //$NON-NLS-1$
-				parent));
-		addField(new BooleanFieldEditor( //
+				parent);
+		addField(autoFoldRegions);
+
+		final var autoFoldImports = new BooleanFieldEditor( //
 				PREF_AUTOFOLD_IMPORT_STATEMENTS, //
 				"Import statements", //$NON-NLS-1$
-				parent));
+				parent);
+		addField(autoFoldImports);
+
+		/*
+		 * update editor states
+		 */
+		final Runnable updateEditorStates = () -> {
+			autoFoldComments.setEnabled(foldingEnabled.getBooleanValue(), parent);
+			autoFoldLicenseHeaders.setEnabled(foldingEnabled.getBooleanValue() && !autoFoldComments.getBooleanValue(),
+					parent);
+			autoFoldRegions.setEnabled(foldingEnabled.getBooleanValue(), parent);
+			autoFoldImports.setEnabled(foldingEnabled.getBooleanValue(), parent);
+		};
+		foldingEnabled.getDescriptionControl(parent).addListener(SWT.Selection, event -> updateEditorStates.run());
+		autoFoldComments.getDescriptionControl(parent).addListener(SWT.Selection, event -> updateEditorStates.run());
+		UI.getDisplay().asyncExec(updateEditorStates);
 	}
 
 	@Override

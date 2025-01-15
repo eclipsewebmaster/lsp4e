@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
@@ -63,6 +64,9 @@ public class LSPFoldingReconcilingStrategy
 
 	private static final Annotation[] NO_ANNOTATIONS = new Annotation[0];
 
+	private static final Pattern LICENSE_KEYWORDS = Pattern
+			.compile("(?i)(copyright|licensed under|all rights reserved|SPDX-License-Identifier)"); //$NON-NLS-1$
+
 	private @Nullable IDocument document;
 	private @Nullable ProjectionAnnotationModel projectionAnnotationModel;
 	private @Nullable ProjectionViewer viewer;
@@ -72,6 +76,7 @@ public class LSPFoldingReconcilingStrategy
 	private final IPreferenceStore prefStore = LanguageServerPlugin.getDefault().getPreferenceStore();
 	private boolean isFoldingEnabled = prefStore.getBoolean(FoldingPreferencePage.PREF_FOLDING_ENABLED);
 	private boolean collapseComments = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_COMMENTS);
+	private boolean collapseLicenseHeader = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_LICENSE_HEADERS_COMMENTS);
 	private boolean collapseFoldingRegions = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_REGIONS);
 	private boolean collapseImports = prefStore.getBoolean(FoldingPreferencePage.PREF_AUTOFOLD_IMPORT_STATEMENTS);
 	private final IPropertyChangeListener foldingPrefsListener = (final PropertyChangeEvent event) -> {
@@ -88,6 +93,9 @@ public class LSPFoldingReconcilingStrategy
 				break;
 			case FoldingPreferencePage.PREF_AUTOFOLD_COMMENTS:
 				collapseComments = Boolean.parseBoolean(newValue.toString());
+				break;
+			case FoldingPreferencePage.PREF_AUTOFOLD_LICENSE_HEADERS_COMMENTS:
+				collapseLicenseHeader = Boolean.parseBoolean(newValue.toString());
 				break;
 			case FoldingPreferencePage.PREF_AUTOFOLD_REGIONS:
 				collapseFoldingRegions = Boolean.parseBoolean(newValue.toString());
@@ -187,22 +195,29 @@ public class LSPFoldingReconcilingStrategy
 		markInvalidAnnotationsForDeletion(deletions, existing);
 
 		if (ranges != null) {
+			boolean[] isFirstFoldingRange = { true };
 			ranges.stream() //
 					.sorted(Comparator.comparing(FoldingRange::getEndLine)) //
 					.forEach(foldingRange -> {
 						try {
 							final var collapsByDefault = foldingRange.getKind() != null
 									&& switch (foldingRange.getKind()) {
-									case FoldingRangeKind.Comment -> collapseComments;
+									case FoldingRangeKind.Comment -> {
+										if (isFirstFoldingRange[0]
+												&& LICENSE_KEYWORDS.matcher(getTextOfFoldingRange(foldingRange)).find())
+											yield collapseLicenseHeader || collapseComments;
+										yield collapseComments;
+									}
 									case FoldingRangeKind.Imports -> collapseImports;
 									case FoldingRangeKind.Region -> collapseFoldingRegions;
 									default -> false;
 									};
 							updateAnnotation(deletions, existing, additions, foldingRange.getStartLine(),
 									foldingRange.getEndLine(), collapsByDefault);
-						} catch (BadLocationException e) {
-							// should never occur
+						} catch (BadLocationException ex) {
+							LanguageServerPlugin.logError(ex);
 						}
+						isFirstFoldingRange[0] = false;
 					});
 		}
 
@@ -217,6 +232,20 @@ public class LSPFoldingReconcilingStrategy
 			theProjectionAnnotationModel.modifyAnnotations(deletions.toArray(Annotation[]::new), additions,
 					NO_ANNOTATIONS);
 		}
+	}
+
+	private String getTextOfFoldingRange(final FoldingRange range) {
+		final var doc = this.document;
+		if (doc != null) {
+			try {
+				final int offsetStart = doc.getLineOffset(range.getStartLine());
+				return doc.get(offsetStart,
+						doc.getLineOffset(range.getEndLine()) + doc.getLineLength(range.getEndLine()) - offsetStart);
+			} catch (BadLocationException ex) {
+				LanguageServerPlugin.logError(ex);
+			}
+		}
+		return ""; //$NON-NLS-1$
 	}
 
 	@Override
