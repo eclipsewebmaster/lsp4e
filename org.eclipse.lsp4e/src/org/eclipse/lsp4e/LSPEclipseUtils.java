@@ -175,7 +175,7 @@ import com.google.common.primitives.Chars;
 public final class LSPEclipseUtils {
 
 	private static final String DEFAULT_LABEL = "LSP Workspace Edit"; //$NON-NLS-1$
-	public static final String HTTP = "http"; //$NON-NLS-1$
+	private static final String HTTP = "http"; //$NON-NLS-1$
 	public static final String INTRO_URL = "http://org.eclipse.ui.intro"; //$NON-NLS-1$
 	public static final String FILE_URI = "file://"; //$NON-NLS-1$
 
