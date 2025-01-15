@@ -359,7 +359,7 @@ public class SymbolsLabelProvider extends LabelProvider
 	@Override
 	public void preferenceChange(PreferenceChangeEvent event) {
 		if (event.getKey().equals(CNFOutlinePage.SHOW_KIND_PREFERENCE)) {
-			this.showKind = Boolean.valueOf(event.getNewValue().toString());
+			this.showKind = Boolean.parseBoolean(event.getNewValue().toString());
 			for (Object listener : this.getListeners()) {
 				if (listener instanceof ILabelProviderListener labelProviderListener) {
 					labelProviderListener.labelProviderChanged(new LabelProviderChangedEvent(this));

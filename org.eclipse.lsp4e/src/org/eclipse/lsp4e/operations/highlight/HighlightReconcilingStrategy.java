@@ -311,7 +311,7 @@ public class HighlightReconcilingStrategy
 	@Override
 	public void preferenceChange(PreferenceChangeEvent event) {
 		if (event.getKey().equals(TOGGLE_HIGHLIGHT_PREFERENCE)) {
-			this.enabled = Boolean.valueOf(event.getNewValue().toString());
+			this.enabled = Boolean.parseBoolean(event.getNewValue().toString());
 			if (enabled) {
 				initialReconcile();
 			} else {
