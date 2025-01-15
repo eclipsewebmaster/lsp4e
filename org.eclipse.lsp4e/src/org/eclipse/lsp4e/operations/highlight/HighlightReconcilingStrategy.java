@@ -17,7 +17,6 @@ import static org.eclipse.lsp4e.internal.NullSafetyHelper.lateNonNull;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
@@ -250,9 +249,7 @@ public class HighlightReconcilingStrategy
 				modelExtension.replaceAnnotations(fOccurrenceAnnotations, annotationMap);
 			} else {
 				removeOccurrenceAnnotations();
-				Iterator<Entry<Annotation, org.eclipse.jface.text.Position>> iter = annotationMap.entrySet().iterator();
-				while (iter.hasNext()) {
-					Entry<Annotation, org.eclipse.jface.text.Position> mapEntry = iter.next();
+				for (Entry<Annotation, org.eclipse.jface.text.Position> mapEntry : annotationMap.entrySet()) {
 					annotationModel.addAnnotation(mapEntry.getKey(), mapEntry.getValue());
 				}
 			}

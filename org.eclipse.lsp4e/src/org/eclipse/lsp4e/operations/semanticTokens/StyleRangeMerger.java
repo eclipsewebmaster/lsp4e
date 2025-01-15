@@ -10,7 +10,6 @@ package org.eclipse.lsp4e.operations.semanticTokens;
 
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextPresentation;
@@ -73,10 +72,8 @@ public class StyleRangeMerger {
 		// (exact means the first overlapping range has the same start and the last the
 		// same end)
 		Iterator<StyleRange> e = textPresentation.getNonDefaultStyleRangeIterator();
-		@NonNull
 		StyleRange target = e.next(); // as we merged a non-empty array of style ranges there is at least 1
-		for (int idx = 0; idx < styleRanges.length; idx++) {
-			StyleRange template = styleRanges[idx];
+		for (final StyleRange template : styleRanges) {
 			if (!isStyleModifying(template)) {
 				// only consider style ranges that potentially modify an existing style
 				continue;
