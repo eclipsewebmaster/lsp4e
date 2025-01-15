@@ -425,12 +425,13 @@ public class LSCompletionProposal
 				LanguageServerPlugin.logError(e);
 			}
 		}
-		String insertText = getInsertText();
+		final String insertText = getInsertText();
+		final int insertTextLength = insertText.length();
 		try {
 			String subDoc = document.get(
-					Math.max(0, completionOffset - insertText.length()),
-					Math.min(insertText.length(), completionOffset));
-			for (int i = 0; i < insertText.length() && i < completionOffset; i++) {
+					Math.max(0, completionOffset - insertTextLength),
+					Math.min(insertTextLength, completionOffset));
+			for (int i = 0; i < insertTextLength && i < completionOffset; i++) {
 				String tentativeCommonString = subDoc.substring(i);
 				if (insertText.startsWith(tentativeCommonString)) {
 					return completionOffset - tentativeCommonString.length();
@@ -487,7 +488,8 @@ public class LSCompletionProposal
 				// try to reuse existing characters after completion location
 				int shift = offset - bestOffset;
 				int commonSize = 0;
-				while (commonSize < insertText.length() - shift
+				final int insertTextLength = insertText.length();
+				while (commonSize < insertTextLength - shift
 					&& document.getLength() > offset + commonSize
 					&& document.getChar(bestOffset + shift + commonSize) == insertText.charAt(commonSize + shift)) {
 					commonSize++;

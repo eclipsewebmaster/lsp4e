@@ -40,14 +40,14 @@ public final class CompletionProposalTools {
 		int prefixToCursorLength = cursorOffset - completionInsertionOffset;
 		String prefixToCursor = document.get(completionInsertionOffset, prefixToCursorLength);
 		int i;
-		for (i = 0; i < prefixToCursor.length(); i++) {
+		for (i = 0; i < prefixToCursorLength; i++) {
 			if (!isSubstringFoundOrderedInString(
 					prefixToCursor.substring(prefixToCursorLength - i - 1, prefixToCursorLength),
 					completionItemFilter)) {
 				break;
 			}
 		}
-		return prefixToCursor.substring(prefixToCursor.length() - i);
+		return prefixToCursor.substring(prefixToCursorLength - i);
 	}
 
 	/**
@@ -105,11 +105,13 @@ public final class CompletionProposalTools {
 		if (subIndex == -1) {
 			return isSubstringFoundOrderedInString(documentFilter, completionFilter) ? 4 : 5;
 		}
+		final int documentFilterLength = documentFilter.length();
+		final int completionFilterLength = completionFilter.length();
 		while (subIndex != -1) {
 			if (subIndex > 0 && Character.isLetterOrDigit(completionFilter.charAt(subIndex - 1))) {
 				topCategory = Math.min(topCategory, 3);
-			} else if (subIndex + documentFilter.length() < completionFilter.length() - 1
-					&& Character.isLetterOrDigit(completionFilter.charAt(subIndex + documentFilter.length() + 1))) {
+			} else if (subIndex + documentFilterLength < completionFilterLength - 1
+					&& Character.isLetterOrDigit(completionFilter.charAt(subIndex + documentFilterLength + 1))) {
 				topCategory = Math.min(topCategory, 2);
 			} else {
 				topCategory = 1;
@@ -158,12 +160,14 @@ public final class CompletionProposalTools {
 		if (i == -1) {
 			return -1;
 		}
-		if (documentFilter.length() == 1) {
+
+		final int documentFilterLength = documentFilter.length();
+		if (documentFilterLength == 1) {
 			return i + prefixLength;
 		}
 
 		int matchLength = lengthOfPrefixMatch(documentFilter, completionFilter.substring(i));
-		if (matchLength == documentFilter.length()) {
+		if (matchLength == documentFilterLength) {
 			return i + prefixLength;
 		}
 		int bestScore = i + getScoreOfFilterMatchHelper(prefixLength + i + matchLength,
@@ -173,7 +177,7 @@ public final class CompletionProposalTools {
 		i = completionFilter.indexOf(searchChar, i + 1);
 		while (i != -1) {
 			matchLength = lengthOfPrefixMatch(documentFilter, completionFilter.substring(i));
-			if (matchLength == documentFilter.length()) {
+			if (matchLength == documentFilterLength) {
 				return i + prefixLength;
 			}
 			int score = i + getScoreOfFilterMatchHelper(prefixLength + i + matchLength,
@@ -190,7 +194,8 @@ public final class CompletionProposalTools {
 
 	private static int lengthOfPrefixMatch(String first, String second) {
 		int i;
-		for (i = 0; i < Math.min(first.length(), second.length()); i++) {
+		final var maxLength = Math.min(first.length(), second.length());
+		for (i = 0; i < maxLength; i++) {
 			if (first.charAt(i) != second.charAt(i))
 				break;
 		}
