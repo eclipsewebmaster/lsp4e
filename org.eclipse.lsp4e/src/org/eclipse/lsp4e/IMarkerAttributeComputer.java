@@ -40,13 +40,13 @@ public interface IMarkerAttributeComputer {
 	 *            the map with the attributes for the marker, where the
 	 *            implementation can add attributes
 	 */
-	public void addMarkerAttributesForDiagnostic(Diagnostic diagnostic, @Nullable IDocument document,
+	void addMarkerAttributesForDiagnostic(Diagnostic diagnostic, @Nullable IDocument document,
 			IResource resource, Map<String, Object> attributes);
 
 	/**
 	 * Computes a string to be used as Marker message.
 	 */
-	public default String computeMarkerMessage(Diagnostic diagnostic) {
+	default String computeMarkerMessage(Diagnostic diagnostic) {
 		final Either<String, Integer> code = diagnostic.getCode();
 		return code == null //
 				? diagnostic.getMessage()

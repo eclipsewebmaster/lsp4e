@@ -38,11 +38,11 @@ import org.eclipse.lsp4j.services.LanguageServer;
  */
 public interface StreamConnectionProvider {
 
-	public void start() throws IOException;
+	void start() throws IOException;
 
-	public @Nullable InputStream getInputStream();
+	@Nullable InputStream getInputStream();
 
-	public @Nullable OutputStream getOutputStream();
+	@Nullable OutputStream getOutputStream();
 
 	/**
 	 * Returns the {@link InputStream} connected to the error output of the process
@@ -53,7 +53,7 @@ public interface StreamConnectionProvider {
 	 *         server process or <code>null</code> if it's redirected or process not
 	 *         yet started.
 	 */
-	public @Nullable InputStream getErrorStream();
+	@Nullable InputStream getErrorStream();
 
 	/**
 	 * Forwards a copy of an {@link InputStream} to an {@link OutputStream}.
@@ -65,7 +65,7 @@ public interface StreamConnectionProvider {
 	 * @return a newly created {@link InputStream} that copies all data to the
 	 *         provided {@link OutputStream}
 	 */
-	public default @Nullable InputStream forwardCopyTo(@Nullable InputStream input, @Nullable OutputStream output) {
+	default @Nullable InputStream forwardCopyTo(@Nullable InputStream input, @Nullable OutputStream output) {
 		if (input == null)
 			return null;
 		if (output == null)
@@ -104,7 +104,7 @@ public interface StreamConnectionProvider {
 	/**
 	 * User provided initialization options.
 	 */
-	public default @Nullable Object getInitializationOptions(@Nullable URI rootUri){
+	default @Nullable Object getInitializationOptions(@Nullable URI rootUri){
 		return null;
 	}
 
@@ -117,7 +117,7 @@ public interface StreamConnectionProvider {
 	 * @return an object whose fields represent the different experimental features
 	 *         supported by the client.
 	 */
-	public default @Nullable Object getExperimentalFeaturesPOJO() {
+	default @Nullable Object getExperimentalFeaturesPOJO() {
 		return null;
 	}
 
@@ -131,11 +131,11 @@ public interface StreamConnectionProvider {
 	 * @return the initial trace level to set
 	 * @see "https://microsoft.github.io/language-server-protocol/specification#initialize"
 	 */
-	public default String getTrace(@Nullable URI rootUri) {
+	default String getTrace(@Nullable URI rootUri) {
 		return "off"; //$NON-NLS-1$
 	}
 
-	public void stop();
+	void stop();
 
 	/**
 	 * Allows to hook custom behavior on messages.
@@ -143,6 +143,6 @@ public interface StreamConnectionProvider {
 	 * @param languageServer the language server receiving/sending the message.
 	 * @param rootURI
 	 */
-	public default void handleMessage(Message message, LanguageServer languageServer, @Nullable URI rootURI) {}
+	default void handleMessage(Message message, LanguageServer languageServer, @Nullable URI rootURI) {}
 
 }

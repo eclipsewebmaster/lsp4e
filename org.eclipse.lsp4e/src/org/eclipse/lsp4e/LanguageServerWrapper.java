@@ -605,9 +605,7 @@ public class LanguageServerWrapper {
 
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(workspaceFolderUpdater);
 
-		CompletableFuture.runAsync(() -> {
-			workingContext.close();
-		});
+		CompletableFuture.runAsync(workingContext::close);
 
 		while (!this.connectedDocuments.isEmpty()) {
 			disconnect(this.connectedDocuments.keySet().iterator().next());

@@ -109,7 +109,7 @@ public class LSPRenameRefactoringWizard extends RefactoringWizard {
 		/**
 		 * Validate page fields.
 		 */
-		private final void validatePage() {
+		private void validatePage() {
 			RefactoringStatus status = validateName();
 			setPageComplete(status);
 		}

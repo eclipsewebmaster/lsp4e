@@ -118,7 +118,7 @@ public final class LSPImages {
 		declareRegistryImage(IMG_TERMINATE_CO, OBJECT + "terminate_co.png"); //$NON-NLS-1$
 	}
 
-	private static final void declareRegistryImage(String key, String path) {
+	private static void declareRegistryImage(String key, String path) {
 		ImageDescriptor desc = ImageDescriptor.getMissingImageDescriptor();
 		Bundle bundle = Platform.getBundle(LanguageServerPlugin.PLUGIN_ID);
 		URL url = null;

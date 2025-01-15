@@ -74,7 +74,7 @@ public interface IFormatRegionsProvider {
 	 * @param document
 	 * @return region containing the whole document
 	 */
-	public static IRegion[] allLines(IDocument document) {
+	static IRegion[] allLines(IDocument document) {
 		return new IRegion[] { new Region(0, document.getLength()) };
 	}
 
@@ -90,7 +90,7 @@ public interface IFormatRegionsProvider {
 	 * @return the regions of the changed lines
 	 *
 	 */
-	public static IRegion @Nullable [] calculateEditedLineRegions(final IDocument document, final IProgressMonitor monitor) {
+	static IRegion @Nullable [] calculateEditedLineRegions(final IDocument document, final IProgressMonitor monitor) {
 		final var result = new IRegion[1] @Nullable [];
 
 		SafeRunner.run(new ISafeRunnable() {
