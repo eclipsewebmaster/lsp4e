@@ -24,7 +24,6 @@ import java.util.function.Consumer;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
@@ -80,18 +79,6 @@ public class LSPDiagnosticsToMarkers implements Consumer<PublishDiagnosticsParam
 
 	public LSPDiagnosticsToMarkers(String serverId) {
 		this(serverId, null, null);
-	}
-
-	/**
-	 *
-	 * @param project
-	 * @param serverId
-	 *            ignored
-	 * @deprecated
-	 */
-	@Deprecated
-	public LSPDiagnosticsToMarkers(IProject project, String serverId) {
-		this(serverId);
 	}
 
 	@Override
