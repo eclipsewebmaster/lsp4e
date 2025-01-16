@@ -43,38 +43,11 @@ public class SymbolsModel {
 
 	private @Nullable URI uri;
 
-	/**
-	 * @deprecated use {@link DocumentSymbolWithURI}
-	 */
-	@Deprecated(since = "0.17.0", forRemoval = true)
-	public static class DocumentSymbolWithFile {
-		public final DocumentSymbol symbol;
-		public final URI uri;
-
-		public DocumentSymbolWithFile(DocumentSymbol symbol, URI uri) {
-			this.symbol = symbol;
-			this.uri = uri;
-		}
-
-		@Override
-		public boolean equals(@Nullable Object obj) {
-			return obj instanceof DocumentSymbolWithFile other && //
-					Objects.equals(this.symbol, other.symbol) && //
-					Objects.equals(this.uri, other.uri);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(this.uri, this.symbol);
-		}
-	}
-
-	public static class DocumentSymbolWithURI extends DocumentSymbolWithFile {
+	public static class DocumentSymbolWithURI {
 		public final DocumentSymbol symbol;
 		public final URI uri;
 
 		public DocumentSymbolWithURI(DocumentSymbol symbol, URI uri) {
-			super(symbol, uri);
 			this.symbol = symbol;
 			this.uri = uri;
 		}
