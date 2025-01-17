@@ -53,6 +53,8 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.framework.Bundle;
 
+import com.google.gson.GsonBuilder;
+
 /**
  * This registry aims at providing a good language server connection (as {@link StreamConnectionProvider}
  * for a given input.
@@ -82,6 +84,7 @@ public class LanguageServersRegistry {
 	private static final String MAKER_TYPE_ELEMENT = "makerType"; //$NON-NLS-1$
 	private static final String MARKER_TYPE_ELEMENT = "markerType"; //$NON-NLS-1$
 	private static final String MARKER_ATTR_COMPUTER_ELEMENT = "markerAttributeComputer"; //$NON-NLS-1$
+	private static final String CONFIGURE_GSON_ATTRIBUTE = "configureGson"; //$NON-NLS-1$
 	private static final String SERVER_INTERFACE_ATTRIBUTE = "serverInterface"; //$NON-NLS-1$
 	private static final String LAUNCHER_BUILDER_ATTRIBUTE = "launcherBuilder"; //$NON-NLS-1$
 	private static final String LABEL_ATTRIBUTE = "label"; //$NON-NLS-1$
@@ -119,6 +122,10 @@ public class LanguageServersRegistry {
 
 		public <S extends LanguageServer> Launcher.Builder<S> createLauncherBuilder() {
 			return new Launcher.Builder<>();
+		}
+
+		public Consumer<GsonBuilder> getConfigureGson() {
+			return builder -> {};
 		}
 
 	}
@@ -206,6 +213,24 @@ public class LanguageServersRegistry {
 				}
 			}
 			return super.getServerInterface();
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public Consumer<GsonBuilder> getConfigureGson() {
+			String configGson = extension.getAttribute(CONFIGURE_GSON_ATTRIBUTE);
+			if (configGson != null && !configGson.isEmpty()) {
+				Bundle bundle = Platform.getBundle(extension.getContributor().getName());
+				if (bundle != null) {
+					try {
+						return (Consumer<GsonBuilder>) extension.createExecutableExtension(CONFIGURE_GSON_ATTRIBUTE);
+					} catch (ClassNotFoundException exception) {
+						StatusManager.getManager().handle(new Status(IStatus.ERROR, LanguageServerPlugin.PLUGIN_ID,
+								exception.getMessage(), exception));
+					}
+				}
+			}
+			return super.getConfigureGson();
 		}
 
 		@SuppressWarnings("unchecked")

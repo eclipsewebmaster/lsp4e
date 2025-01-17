@@ -368,6 +368,7 @@ public class LanguageServerWrapper {
 							.setInput(lspStreamProvider.getInputStream())//
 							.setOutput(lspStreamProvider.getOutputStream())//
 							.setExecutorService(listener)//
+							.configureGson(serverDefinition.getConfigureGson())
 							.wrapMessages(wrapper)//
 							.create();
 					final var languageServer = workingContext.languageServer = launcher.getRemoteProxy();

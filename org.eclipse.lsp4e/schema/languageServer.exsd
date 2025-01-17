@@ -106,6 +106,16 @@
                </appinfo>
             </annotation>
          </attribute>
+         <attribute name="configureGson" type="string">
+            <annotation>
+               <documentation>
+                  An optional gson builder to configure the gson instance used by the language server. If undefined, the default gson builder is used.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn="java.util.function.Consumer:" />
+               </appinfo>
+            </annotation>
+         </attribute>
          <attribute name="singleton" type="boolean">
             <annotation>
                <documentation>
