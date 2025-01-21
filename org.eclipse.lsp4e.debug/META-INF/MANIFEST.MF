@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Debug Adapter client for Eclipse IDE (Incubation)
 Bundle-SymbolicName: org.eclipse.lsp4e.debug;singleton:=true
 Bundle-Vendor: Eclipse LSP4E
-Bundle-Version: 0.15.14.qualifier
+Bundle-Version: 0.15.15.qualifier
 Bundle-Activator: org.eclipse.lsp4e.debug.DSPPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

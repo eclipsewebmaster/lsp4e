@@ -18,6 +18,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDisconnect;
 import org.eclipse.debug.core.model.ILineBreakpoint;
 import org.eclipse.debug.core.model.ITerminate;
@@ -30,6 +31,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.lsp4e.debug.DSPPlugin;
 import org.eclipse.lsp4e.debug.debugmodel.DSPDebugElement;
 import org.eclipse.lsp4e.debug.debugmodel.DSPThread;
 import org.eclipse.osgi.util.NLS;
@@ -187,8 +189,12 @@ public class DSPDebugModelPresentation extends LabelProvider implements IDebugMo
 
 	@Override
 	public void computeDetail(IValue value, IValueDetailListener listener) {
-		// TODO Auto-generated method stub
-
+		try {
+			listener.detailComputed(value, value.getValueString());
+		} catch (DebugException e) {
+			// Should not happen, because DSPValue does not throw this exception
+			DSPPlugin.logError("Failed to compute detail value", e);
+		}
 	}
 
 	public static Display getDisplay() {
