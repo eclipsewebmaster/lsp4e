@@ -112,6 +112,10 @@ public abstract class ProcessStreamConnectionProvider implements StreamConnectio
 		return null;
 	}
 
+	protected @Nullable Process getProcess() {
+		return process;
+	}
+
 	protected @Nullable List<String> getCommands() {
 		return commands;
 	}
