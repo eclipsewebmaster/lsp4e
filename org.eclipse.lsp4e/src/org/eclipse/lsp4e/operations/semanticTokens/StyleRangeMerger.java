@@ -80,8 +80,11 @@ public class StyleRangeMerger {
 			}
 
 			// find the target style range with the same start
-			while (target.start != template.start) {
+			while (target.start != template.start && e.hasNext()) {
 				target = e.next();
+			}
+			if (target.start != template.start) {
+				continue;
 			}
 
 			// apply modification until we have a style range at or after the end
