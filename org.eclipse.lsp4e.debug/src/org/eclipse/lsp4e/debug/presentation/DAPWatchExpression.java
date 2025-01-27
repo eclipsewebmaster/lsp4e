@@ -32,10 +32,19 @@ public class DAPWatchExpression implements IWatchExpressionDelegate {
 		if (context.getDebugTarget() instanceof DSPDebugTarget dapDebugger) {
 			final var args = new EvaluateArguments();
 			args.setExpression(expression);
-			DSPStackFrame frame = castNonNull(Adapters.adapt(context, DSPStackFrame.class));
-			args.setFrameId(frame.getFrameId());
-			dapDebugger.getDebugProtocolServer().evaluate(args).thenAccept(
-					res -> listener.watchEvaluationFinished(createWatchResult(dapDebugger, expression, res)));
+
+			@Nullable
+			DSPStackFrame dspStackFrame = Adapters.adapt(context, DSPStackFrame.class);
+			if (dspStackFrame != null) {
+				DSPStackFrame frame = castNonNull(dspStackFrame);
+				args.setFrameId(frame.getFrameId());
+				dapDebugger.getDebugProtocolServer().evaluate(args).thenAccept(
+						res -> listener.watchEvaluationFinished(createWatchResult(dapDebugger, expression, res)));
+			} else {
+				EvaluateResponse res = new EvaluateResponse();
+				res.setResult("");
+				listener.watchEvaluationFinished(createWatchResult(dapDebugger, expression, res));
+			}
 		}
 	}
 
