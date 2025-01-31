@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>org.eclipse.lsp4e.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
-	<version>0.15.21-SNAPSHOT</version>
+	<version>0.15.22-SNAPSHOT</version>
 
 	<properties>
 		<os-jvm-flags /> <!-- for the default case -->
