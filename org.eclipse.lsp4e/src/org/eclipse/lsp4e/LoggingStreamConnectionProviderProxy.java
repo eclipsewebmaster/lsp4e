@@ -286,7 +286,7 @@ public class LoggingStreamConnectionProviderProxy implements StreamConnectionPro
 		}
 		// no console found, so create a new one
 		final var myConsole = new MessageConsole(Messages.LSConsoleName, null);
-		myConsole.setWaterMarks(80000, 800000); // limit text buffer size to prevent OOM
+		myConsole.setWaterMarks(80_000, 800_000); // limit text buffer size to prevent OOM
 		conMan.addConsoles(new IConsole[] { myConsole });
 		return myConsole;
 	}
