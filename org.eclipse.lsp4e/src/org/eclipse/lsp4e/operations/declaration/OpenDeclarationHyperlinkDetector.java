@@ -10,9 +10,12 @@
  *  Mickael Istria (Red Hat Inc.) - initial implementation
  *  Michał Niewrzał (Rogue Wave Software Inc.) - hyperlink range detection
  *  Lucas Bullen (Red Hat Inc.) - [Bug 517428] Requests sent before initialization
+ *  Dietrich Travkin (Solunar GmbH) - Adapt order of definitions and declarations (issue 1104)
  *******************************************************************************/
 package org.eclipse.lsp4e.operations.declaration;
 
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -21,6 +24,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -38,6 +42,7 @@ import org.eclipse.lsp4e.internal.Pair;
 import org.eclipse.lsp4e.ui.Messages;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -68,9 +73,16 @@ public class OpenDeclarationHyperlinkDetector extends AbstractHyperlinkDetector 
 				.collectAll(ls -> ls.getTextDocumentService().typeDefinition(LSPEclipseUtils.toTypeDefinitionParams(params)).thenApply(l -> Pair.of(Messages.typeDefinitionHyperlinkLabel, l)));
 			var implementations = LanguageServers.forDocument(document).withCapability(ServerCapabilities::getImplementationProvider)
 				.collectAll(ls -> ls.getTextDocumentService().implementation(LSPEclipseUtils.toImplementationParams(params)).thenApply(l -> Pair.of(Messages.implementationHyperlinkLabel, l)));
-			LanguageServers.addAll(LanguageServers.addAll(LanguageServers.addAll(definitions, declarations), typeDefinitions), implementations)
-				.get(800, TimeUnit.MILLISECONDS)
-				.stream().flatMap(locations -> toHyperlinks(document, region, locations.first(), locations.second()).stream())
+
+			var locationPairs = LanguageServers.addAll(definitions, declarations)
+					.get(800, TimeUnit.MILLISECONDS);
+
+			locationPairs = sortElementsUnderCursorToTheEnd(locationPairs, document, region);
+			locationPairs.addAll(LanguageServers.addAll(typeDefinitions, implementations)
+					.get(800, TimeUnit.MILLISECONDS));
+
+			locationPairs.stream()
+				.flatMap(locations -> toHyperlinks(document, region, locations.first(), locations.second()).stream())
 				.forEach(link -> allLinks.putIfAbsent(link.getLocation(), link));
 		} catch (ExecutionException e) {
 			LanguageServerPlugin.logError(e);
@@ -86,12 +98,96 @@ public class OpenDeclarationHyperlinkDetector extends AbstractHyperlinkDetector 
 		return allLinks.values().toArray(IHyperlink[]::new);
 	}
 
+	private List<Pair<@Nullable String, @Nullable Either<@Nullable List<? extends @Nullable Location>, @Nullable List<? extends @Nullable LocationLink>>>> sortElementsUnderCursorToTheEnd(
+			List<Pair<@Nullable String, @Nullable Either<@Nullable List<? extends @Nullable Location>, @Nullable List<? extends @Nullable LocationLink>>>> locations,
+			IDocument document,
+			IRegion textViewerRange) {
+
+		List<Pair<@Nullable String, Either<List<? extends Location>, List<? extends LocationLink>>>> filteredLocationPairs = new ArrayList<>(locations.size());
+		List<Pair<@Nullable String, Either<List<? extends Location>, List<? extends LocationLink>>>> currentLocationPairs = new ArrayList<>(2);
+
+		for (var pair : locations) {
+			if (pair.second() != null && pair.second().isLeft()) {
+				List<Location> remainingLocations = new ArrayList<>(pair.second().getLeft().size());
+				List<Location> currentLocations = new ArrayList<>(2);
+				for (Location location : pair.second().getLeft()) {
+					if (location == null) {
+						continue;
+					}
+					if (cursorOnSameElement(document, textViewerRange, location)) {
+						currentLocations.add(location);
+					} else {
+						remainingLocations.add(location);
+					}
+				}
+				filteredLocationPairs.add(new Pair<>(pair.first(), Either.forLeft(remainingLocations)));
+				currentLocationPairs.add(new Pair<>(pair.first(), Either.forLeft(currentLocations)));
+			} else {
+				filteredLocationPairs.add(pair);
+			}
+		}
+
+		filteredLocationPairs.addAll(currentLocationPairs);
+
+		filteredLocationPairs = filteredLocationPairs.stream()
+				.filter(pair -> pair.second().isRight() || !pair.second().getLeft().isEmpty())
+				.collect(Collectors.toList());
+
+		return filteredLocationPairs;
+	}
+
+	private boolean cursorOnSameElement(IDocument document, IRegion textViewerRange, Location location) {
+		final URI openDocumentUri = LSPEclipseUtils.toUri(document);
+
+		if (openDocumentUri == null) {
+			return false;
+		}
+
+		final String openDocumentUriText = openDocumentUri.toString();
+
+		if (!location.getUri().equals(openDocumentUriText)) {
+			return false;
+		}
+
+		Range locationRange = location.getRange();
+
+		Position locationRangeStartPos = locationRange.getStart();
+		Position locationRangeEndPos = locationRange.getEnd();
+
+		int viewerRangeOffset = textViewerRange.getOffset();
+		int viewerRangeLength = textViewerRange.getLength();
+
+		int viewerRangeLine = -1;
+		int viewerRangeLineOffset = -1;
+		int viewerRangeEndLine = -1;
+		int viewerRangeEndLineOffset = -1;
+		try {
+			viewerRangeLine = document.getLineOfOffset(viewerRangeOffset);
+			viewerRangeLineOffset = document.getLineOffset(viewerRangeLine);
+			viewerRangeEndLine = document.getLineOfOffset(viewerRangeOffset + viewerRangeLength);
+			viewerRangeEndLineOffset = document.getLineOffset(viewerRangeEndLine);
+		} catch (BadLocationException e) {
+			LanguageServerPlugin.logError(e);
+		}
+		int viewerRangeStartCharIndex = viewerRangeOffset - viewerRangeLineOffset;
+		int viewerRangeEndCharIndex = viewerRangeOffset + viewerRangeLength - viewerRangeEndLineOffset;
+
+		if (locationRangeStartPos.getLine() <= viewerRangeLine
+				&& locationRangeEndPos.getLine() >= viewerRangeLine
+				&& locationRangeStartPos.getCharacter() <= viewerRangeStartCharIndex
+				&& locationRangeEndPos.getCharacter() >= viewerRangeEndCharIndex) {
+			return true;
+		}
+
+		return false;
+	}
+
 	/**
 	 * Returns a list of {@link LSBasedHyperlink} using the given LSP locations
 	 *
 	 * @param document
 	 *            the document
-	 * @param linkRegion
+	 * @param region
 	 *            the region
 	 * @param locationType
 	 *            the location type
